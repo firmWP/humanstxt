@@ -47,13 +47,13 @@ humanstxt_load_textdomain();
 /**
  * Enqueue style/script.
  */
-function humanstxt_admin_print_styles()
+function humanstxt_admin_print_styles() : void
 {
     wp_enqueue_style('thickbox');
     wp_enqueue_style('humanstxt-options');
 }
 
-function humanstxt_admin_print_scripts()
+function humanstxt_admin_print_scripts() : void
 {
     wp_enqueue_script('thickbox');
     wp_enqueue_script('humanstxt-options');
@@ -66,7 +66,7 @@ function humanstxt_admin_print_scripts()
  * Calls humanstxt_restore_revision() if necessary.
  * Calls humanstxt_import_file() if necessary.
  */
-function humanstxt_admin_init()
+function humanstxt_admin_init() : void
 {
     if (isset($_GET['page']) && $_GET['page'] === 'humanstxt') {
 
@@ -98,7 +98,7 @@ function humanstxt_admin_init()
  * Callback function if plugin is uninstalled.
  * Deletes all plugin options from the database.
  */
-function humanstxt_uninstall()
+function humanstxt_uninstall() : void
 {
     delete_option('humanstxt_options');
     delete_option('humanstxt_content');
@@ -111,11 +111,11 @@ function humanstxt_uninstall()
  *
  * @since 1.0.1
  */
-function humanstxt_version_warning()
+function humanstxt_version_warning() : void
 {
     if (!humanstxt_is_wp(HUMANSTXT_VERSION_REQUIRED)) {
         $updatelink = ' <a href="'.admin_url('update-core.php').'">'.sprintf(__('Please update your WordPress installation.', 'humanstxt')).'</a>';
-        echo '<div id="humanstxt-warning" class="updated fade"><p><strong>'.sprintf(__('Humans TXT %1$s requires WordPress %2$s or higher.', 'humanstxt'), HUMANSTXT_VERSION, HUMANSTXT_VERSION_REQUIRED).'</strong>'.(current_user_can('update_core') ? $updatelink : '').'</p></div>';
+        print '<div id="humanstxt-warning" class="updated fade"><p><strong>'.sprintf(__('Humans TXT %1$s requires WordPress %2$s or higher.', 'humanstxt'), HUMANSTXT_VERSION, HUMANSTXT_VERSION_REQUIRED).'</strong>'.(current_user_can('update_core') ? $updatelink : '').'</p></div>';
     }
 }
 
@@ -126,7 +126,7 @@ function humanstxt_version_warning()
  *
  * @since 1.2.0
  */
-function humanstxt_is_wp($version)
+function humanstxt_is_wp(string $version) : bool
 {
     return version_compare(preg_replace('~[^0-9.]~', '', get_bloginfo('version')), $version, '>=');
 }
@@ -135,7 +135,7 @@ function humanstxt_is_wp($version)
  * Callback function for 'admin_menu' action.
  * Registers the options page if the current user has access.
  */
-function humanstxt_admin_menu()
+function humanstxt_admin_menu() : void
 {
     $roles = humanstxt_option('roles');
     array_unshift($roles, 'administrator'); // admins can always edit
@@ -159,10 +159,10 @@ function humanstxt_admin_menu()
  * Callback function for 'plugin_action_links_{$plugin_file}' filter.
  * Adds a link to the plugin options page.
  *
- * @param array $actions
- * @return array $actions Hijacked actions.
+ * @param array<string> $actions
+ * @return array<string> $actions Hijacked actions.
  */
-function humanstxt_actionlinks($actions)
+function humanstxt_actionlinks(array $actions) : array
 {
     return array_merge(
         array('settings' => sprintf('<a href="%s">%s</a>', HUMANSTXT_OPTIONS_URL, /* translators: DO NOT TRANSLATE! */ __('Settings'))),
@@ -174,7 +174,7 @@ function humanstxt_actionlinks($actions)
  * Callback function for 'load-{$page_hook}' action.
  * Registers the contextual help menu.
  */
-function humanstxt_contextual_help()
+function humanstxt_contextual_help() : void
 {
     $humanstxt = sprintf(
         '<p><strong>%s</strong> &mdash; %s</p>',
@@ -222,7 +222,7 @@ function humanstxt_contextual_help()
  *
  * @param string $content New content of the humans.txt file
  */
-function humanstxt_update_content($content)
+function humanstxt_update_content(string $content) : void
 {
     if ($content !== humanstxt_content()) {
         humanstxt_add_revision($content);
@@ -235,7 +235,7 @@ function humanstxt_update_content($content)
  *
  * @global $humanstxt_options
  */
-function humanstxt_update_options()
+function humanstxt_update_options() : void
 {
     global $humanstxt_options;
 
@@ -268,12 +268,12 @@ function humanstxt_update_options()
  *
  * @param int $revision Revisons number (key)
  */
-function humanstxt_restore_revision($revision)
+function humanstxt_restore_revision(int $revision) : null
 {
     $revisions = humanstxt_revisions();
 
     if (!isset($revisions[$revision])) {
-        return;
+        return null;
     }
 
     humanstxt_update_content($revisions[$revision]['content']);
@@ -292,7 +292,7 @@ function humanstxt_restore_revision($revision)
  *
  * @global $wp_filesystem
  */
-function humanstxt_import_file()
+function humanstxt_import_file() : void
 {
     global $wp_filesystem;
 
@@ -355,20 +355,20 @@ function humanstxt_import_file()
  * humans.txt plugins to avoid conflicts.
  *
  * @param string $plugin_file WordPress plugin path
- * @param array $plugin_data Plugin informations
+ * @param array<string> $plugin_data Plugin informations
  * @param string $status Plugin context: mustuse, dropins, etc.
  */
-function humanstxt_plugin_notice($plugin_file, $plugin_data, $status)
+function humanstxt_plugin_notice(string $plugin_file, array $plugin_data, string $status) : void
 {
     if (is_plugin_active($plugin_file)) {
-        echo '<tr class="plugin-update-tr"><td colspan="3" class="plugin-update colspanchange"><div class="update-message">'.sprintf(__('Humans TXT includes the functionality of %1$s. Please deactivate %1$s to avoid plugin conflicts.', 'humanstxt'), '<em>'.$plugin_data['Name'].'</em>').'</div></td></tr>';
+        print '<tr class="plugin-update-tr"><td colspan="3" class="plugin-update colspanchange"><div class="update-message">'.sprintf(__('Humans TXT includes the functionality of %1$s. Please deactivate %1$s to avoid plugin conflicts.', 'humanstxt'), '<em>'.$plugin_data['Name'].'</em>').'</div></td></tr>';
     }
 }
 
 /**
  * Returns an array with plugin rating and total votes from WordPress.org.
  *
- * @return array|false Plugin rating and total votes.
+ * @return array<string>|false Plugin rating and total votes.
  */
 function humanstxt_rating()
 {
@@ -398,12 +398,12 @@ function humanstxt_rating()
  *
  * @since 1.2.0
  */
-function humanstxt_ajax_preview()
+function humanstxt_ajax_preview() : void
 {
     if (isset($_GET['content']) && $_GET['content'] !== '') {
-        echo '<pre>'.esc_html(apply_filters('humans_txt', $_GET['content'])).'</pre>';
+        print '<pre>'.esc_html(apply_filters('humans_txt', $_GET['content'])).'</pre>';
     } else {
-        echo /* translators: DO NOT TRANSLATE! */ __('An error has occurred. Please reload the page and try again.');
+        print /* translators: DO NOT TRANSLATE! */ __('An error has occurred. Please reload the page and try again.');
     }
 
     exit;
@@ -413,7 +413,7 @@ function humanstxt_ajax_preview()
  * Callback function registered with add_options_page().
  * Prints the requested page (options or revisions).
  */
-function humanstxt_options()
+function humanstxt_options() : void
 {
 
     // show revisions page and are they activated?
@@ -428,7 +428,7 @@ function humanstxt_options()
  * Prints the plugin options page.
  * @since 1.1.0
  */
-function humanstxt_options_page()
+function humanstxt_options_page() : void
 {
     ?>
 <div id="humanstxt" class="wrap<?php if (!humanstxt_is_wp('3.4')) : ?> not-wp34<?php endif; ?><?php if (!humanstxt_is_wp('3.2')) : ?> not-wp32<?php endif; ?>">
@@ -488,7 +488,7 @@ function humanstxt_options_page()
 							<div class="star star1"><img src="<?php echo $starimg ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e('1 star') ?>" /></div>
 						<?php endif; ?>
 					</div>
-					<small class="text-votes"><?php printf( /* translators: DO NOT TRANSLATE! */ _n('(based on %s rating)', '(based on %s ratings)', $rating['votes']), number_format_i18n($rating['votes'])) ?></small>
+					<small class="text-votes"><?php printf( /* translators: DO NOT TRANSLATE! */ _n('(based on %s rating)', '(based on %s ratings)', (int) $rating['votes']), number_format_i18n((float) $rating['votes'])) ?></small>
 				</div>
 			<?php endif; ?>
 
@@ -591,7 +591,7 @@ function humanstxt_options_page()
 							<h5><?php echo $group_names[$group] ?></h5>
 							<ul class="hidden">
 								<?php foreach ($variables as $variable) : ?>
-									<?php $preview = !isset($variable[5]) || $variable[5] ? call_user_func($variable[3]) : /* translators: Preview: Not available... */ __('Not available...', 'humanstxt') ?>
+									<?php $preview = !isset($variable[5]) || $variable[5] === '' ? call_user_func($variable[3]) : /* translators: Preview: Not available... */ __('Not available...', 'humanstxt') ?>
 									<li title="<?php echo esc_attr(sprintf( /* translators: %s: output preview of variable */ __('Preview: %s', 'humanstxt'), $preview)) ?>">
 										<code>$<?php echo $variable[2]?>$</code>
 										<?php if (isset($variable[4]) && $variable[4] !== '') : ?>
@@ -620,7 +620,7 @@ function humanstxt_options_page()
  * Prints the plugin options revisions page.
  * @since 1.1.0
  */
-function humanstxt_revisions_page()
+function humanstxt_revisions_page() : void
 {
     ?>
 <div id="humanstxt-revisions" class="wrap<?php if (!humanstxt_is_wp('3.2')) : ?> not-wp32<?php endif; ?>">

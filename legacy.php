@@ -19,15 +19,4 @@ function humanstxt_admin_body_class( $classes ) {
 }
 add_filter( 'admin_body_class', 'humanstxt_admin_body_class' );
 
-if ( !function_exists( 'esc_textarea' ) ) :
-/**
- * Escaping for textarea values introduced in WordPress 3.1.
- * Source: http://codex.wordpress.org/Function_Reference/esc_textarea
- */
-function esc_textarea( $text ) {
-	$safe_text = htmlspecialchars( $text, ENT_QUOTES );
-	return apply_filters( 'esc_textarea', $safe_text, $text );
-}
-endif;
-
 ?>
