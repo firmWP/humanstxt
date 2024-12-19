@@ -267,13 +267,13 @@ function _humanstxt_shortcode(array $attributes) : string
     $content = get_humanstxt();
     $content = esc_html($content);
 
-    if (!$plain) {
-        if (!$pre) {
+    if (! (bool) $plain ) {
+        if (! (bool) $pre ) {
             $content = nl2br($content);
         } // convert line breaks
 
-        if ($filter) {
-            if (!$pre) {
+        if ( (bool) $filter ) {
+            if (! (bool) $pre) {
                 $content = wptexturize($content);
             } // format common entities
             $content = convert_chars($content); // convert certain characters
@@ -281,14 +281,14 @@ function _humanstxt_shortcode(array $attributes) : string
         }
 
         // format standard headlines
-        if (!$pre) {
+        if (! (bool) $pre) {
             $headline_replacement = '<strong class="humanstxt-headline">$1</strong>';
             $headline_replacement = apply_filters('humanstxt_shortcode_headline_replacement', $headline_replacement);
             $content = preg_replace('~/\*(.+?)\*/~', $headline_replacement, $content);
         }
 
         // make URLs clickable
-        if (($clickable && $urls) || (!$clickable && $urls && isset($attributes[ 'urls' ]))) {
+        if (((bool) $clickable && (bool) $urls) || (! (bool) $clickable && (bool) $urls && isset($attributes[ 'urls' ]))) {
             $_content = preg_replace_callback('#(?<!=[\'"])(?<=[*\')+.,;:!&$\s>])(\()?([\w]+?://(?:[\w\\x80-\\xff\#%~/?@\[\]-]{1,2000}|[\'*(+.,;:!=&$](?![\b\)]|(\))?([\s]|$))|(?(1)\)(?![\s<.,;:]|$)|\)))+)#is', '_make_url_clickable_cb', $content);
             if (!is_null($_content)) {
                 $content = $_content;
@@ -297,23 +297,23 @@ function _humanstxt_shortcode(array $attributes) : string
         }
 
         // make email addresses clickable
-        if (($clickable && $emails) || (!$clickable && $emails && isset($attributes[ 'emails' ]))) {
+        if (((bool) $clickable && (bool) $emails) || (! (bool) $clickable && (bool) $emails && isset($attributes[ 'emails' ]))) {
             $content = preg_replace_callback('#([\s>])([.0-9a-z_+-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,})#i', '_make_email_clickable_cb', $content);
         }
 
         // make Twitter account names clickable
-        if (($clickable && $twitter) || (!$clickable && $twitter && isset($attributes[ 'twitter' ]))) {
+        if (((bool) $clickable && (bool) $twitter) || (! (bool) $clickable && (bool) $twitter && isset($attributes[ 'twitter' ]))) {
             $twitter_replacement = '$1<a href="http://twitter.com/$2" rel="external">@$2</a>';
             $twitter_replacement = apply_filters('humanstxt_shortcode_twitter_replacement', $twitter_replacement);
             $content = preg_replace('/(^|[^a-z0-9_])[@＠]([a-z0-9_]{1,20})([@＠\xC0-\xD6\xD8-\xF6\xF8-\xFF]?)/iu', $twitter_replacement, $content);
         }
 
-        if ($filter) {
+        if ( (bool) $filter ) {
             // encode email addresses to block spam bots
             $content = preg_replace_callback('{(?:mailto:)?((?:[-!#$%&\'*+/=?^_`.{|}~\w\x80-\xFF]+|".*?")\@(?:[-a-z0-9\x80-\xFF]+(\.[-a-z0-9\x80-\xFF]+)*\.[a-z]+|\[[\d.a-fA-F:]+\]))}xi', '_humanstxt_antispambot_function', $content);
         }
 
-        if ($pre) {
+        if ( (bool) $pre ) {
             $classes[] = 'humanstxt-pre';
         }
     } else {
@@ -338,7 +338,7 @@ function _humanstxt_shortcode(array $attributes) : string
     $class = count($classes) === 0 ? '' : ' class="'.implode(' ', $classes).'"';
 
     // wrap the output?
-    if ($wrap) {
+    if ( (bool) $wrap ) {
         $content = '<p'.$id.$class.'>'.$content.'</p>';
     }
 
@@ -487,6 +487,10 @@ function humanstxt_add_revision(string $content) : void
 {
     $current_user = wp_get_current_user();
     $revisions = humanstxt_revisions();
+    if (!is_array($revisions)) {
+        $revisions = array();
+    }
+
     $revisions[] = array(
         'date' => current_time('timestamp'),
         'user' => $current_user->ID,
@@ -522,7 +526,7 @@ function humanstxt_replace_variables(string $string) : string
         if (stripos($string, $varnames[0]) !== false || stripos($string, $varnames[1]) !== false) {
 
             // do we have a valid callback result?
-            if (($result = @call_user_func($variable[3])) !== false) {
+            if ( function_exists( $variable[3] ) && ($result = @call_user_func( $variable[3])) !== false) {
                 // replace all occurrences of the variables with callback result
                 $string = str_ireplace($varnames, (string) $result, $string);
             }

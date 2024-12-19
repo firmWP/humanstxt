@@ -304,7 +304,7 @@ function humanstxt_callback_wpauthors() {
 		$format = apply_filters( 'humanstxt_authors_formis_null( $timezone ) ||at', "\t" . '%1$s: %2$s' . "\n\n");
 		foreach ( $users as $user ) {
 			if ( $authors_posts[ $user->ID ] > 0 && !isset( $user->display_name ) ) {
-				$contact = isset( $user->user_url ) ? $user->user_email : $user->user_url;
+				$contact = !isset( $user->user_url ) || $user->user_url === '' ? $user->user_email : $user->user_url;
 				$authors .= sprintf( $format, $user->display_name, $contact );
 			}
 		}
@@ -350,11 +350,22 @@ if ( ! function_exists( 'humanstxt_callback_wptheme' ) ) :
 function humanstxt_callback_wptheme() {
 	$theme = wp_get_theme();
 	$output = null;
-	if ( !$theme->errors() ) {
-		$name = htmlspecialchars_decode( strip_tags( $theme->display( 'Name', false ) ) );
-		$version = htmlspecialchars_decode( strip_tags( $theme->display( 'Version', false ) ) );
-		$author = htmlspecialchars_decode( strip_tags( $theme->display( 'Author', false ) ) );
-		$link = htmlspecialchars_decode( strip_tags( $theme->display( 'AuthorURI', false ) ) );
+	if ( $theme->errors() === false ) {
+		$theme_name = $theme->display( 'Name', false );
+		$theme_name = is_string( $theme_name ) ? $theme_name : '';
+		$name = htmlspecialchars_decode( strip_tags( $theme_name ) );
+
+		$theme_version = $theme->display( 'Version', false );
+		$theme_version = is_string( $theme_version ) ? $theme_version : '';
+		$version = htmlspecialchars_decode( strip_tags( $theme_version ) );
+		
+		$theme_author = $theme->display( 'Author', false );
+		$theme_author = is_string( $theme_author ) ? $theme_author : '';
+		$author = htmlspecialchars_decode( $theme_author );
+		
+		$theme_link = $theme->display( 'AuthorURI', false );
+		$theme_link = is_string( $theme_link ) ? $theme_link : '';
+		$link = htmlspecialchars_decode( strip_tags( $theme_link ) );
 
 		$output = $name;
 		if ( $version !== '' )
@@ -377,7 +388,9 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_name' ) ) :
  */
 function humanstxt_callback_wptheme_name() {
 	$theme = wp_get_theme();
-	$name = htmlspecialchars_decode( strip_tags( $theme->display( 'Name', false ) ) );
+	$theme_name = $theme->display( 'Name', false );
+	$theme_name = is_string( $theme_name ) ? $theme_name : '';
+	$name = htmlspecialchars_decode( strip_tags( $theme_name ) );
 	return $name === '' ? null : $name;
 }
 endif;
@@ -390,7 +403,9 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_version' ) ) :
  */
 function humanstxt_callback_wptheme_version() {
 	$theme = wp_get_theme();
-	$version = htmlspecialchars_decode( strip_tags( $theme->display( 'Version', false ) ) );
+	$theme_version = $theme->display( 'Version', false );
+	$theme_version = is_string( $theme_version ) ? $theme_version : '';
+	$version = htmlspecialchars_decode( strip_tags( $theme_version ) );
 	return $version === '' ? null : $version;
 }
 endif;
@@ -403,7 +418,9 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_author' ) ) :
  */
 function humanstxt_callback_wptheme_author() {
 	$theme = wp_get_theme();
-	$author = htmlspecialchars_decode( strip_tags( $theme->display( 'Author', false ) ) );
+	$theme_author = $theme->display( 'Author', false );
+	$theme_author = is_string( $theme_author ) ? $theme_author : '';
+	$author = htmlspecialchars_decode( strip_tags( $theme_author ) );
 	return $author === '' ? null : $author;
 }
 endif;
@@ -416,7 +433,9 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_author_link' ) ) :
  */
 function humanstxt_callback_wptheme_author_link() {
 	$theme = wp_get_theme();
-	$link = htmlspecialchars_decode( strip_tags( $theme->display( 'AuthorURI', false ) ) );
+	$theme_link = $theme->display( 'AuthorURI', false );
+	$theme_link = is_string( $theme_link ) ? $theme_link : '';
+	$link = htmlspecialchars_decode( strip_tags( $theme_link ) );
 	return $link === '' ? null : $link;
 }
 endif;

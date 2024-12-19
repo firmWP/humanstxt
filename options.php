@@ -321,7 +321,7 @@ function humanstxt_import_file() : void
             $import = false;
         }
 
-        if (!preg_match('~\S~', $contents)) { // only white-space?
+        if (preg_match('~\S~', $contents) === false || preg_match('~\S~', $contents) === 0) { // only white-space?
             $import = false;
         }
 
@@ -562,7 +562,7 @@ function humanstxt_options_page() : void
 				<input type="submit" name="submit" class="button button-primary" value="<?php /* translators: DO NOT TRANSLATE! */ esc_attr_e('Save') ?>" />
 				<a href="<?php echo esc_url(admin_url('admin-ajax.php?action=humanstxt-preview')) ?>" class="button button-preview hide-if-no-js" title="<?php /* translators: DO NOT TRANSLATE! */ _e('Preview') ?>"><?php /* translators: DO NOT TRANSLATE! */ _e('Preview') ?></a>
 				<?php $revisions = humanstxt_revisions() ?>
-				<?php if (count($revisions) > 1) : ?>
+				<?php if (is_array($revisions) && count($revisions) > 1) : ?>
 					<a href="<?php echo esc_url(HUMANSTXT_REVISIONS_URL) ?>" class="button"><?php _e('View Revisions', 'humanstxt') ?></a>
 				<?php endif; ?>
 			</p>
@@ -591,7 +591,7 @@ function humanstxt_options_page() : void
 							<h5><?php echo $group_names[$group] ?></h5>
 							<ul class="hidden">
 								<?php foreach ($variables as $variable) : ?>
-									<?php $preview = !isset($variable[5]) || $variable[5] === '' ? call_user_func($variable[3]) : /* translators: Preview: Not available... */ __('Not available...', 'humanstxt') ?>
+									<?php $preview = (!isset($variable[5]) || $variable[5] === '') && is_callable($variable[3]) ? call_user_func($variable[3]) : /* translators: Preview: Not available... */ __('Not available...', 'humanstxt') ?>
 									<li title="<?php echo esc_attr(sprintf( /* translators: %s: output preview of variable */ __('Preview: %s', 'humanstxt'), $preview)) ?>">
 										<code>$<?php echo $variable[2]?>$</code>
 										<?php if (isset($variable[4]) && $variable[4] !== '') : ?>
@@ -632,14 +632,18 @@ function humanstxt_revisions_page() : void
 	<h1><?php _e('Humans TXT', 'humanstxt') ?>: <?php _e('Revisions') ?></h1>
 
 	<?php
-    $revisions = humanstxt_revisions();
+		$show_revision = 0;
+		$live_revision = 0;
+    $revisions = is_array(humanstxt_revisions()) ? humanstxt_revisions() : array();
     krsort($revisions);
-    $live_revision = max(array_keys($revisions));
-    $show_revision = isset($_GET['revision']) && isset($revisions[$_GET['revision']]) ? intval($_GET['revision']) : false; ?>
-
+		if (count($revisions) !== 0):
+			$live_revision = max(array_keys($revisions));
+			$show_revision = isset($_GET['revision']) && isset($revisions[$_GET['revision']]) ? intval($_GET['revision']) : false;
+		endif;
+		?>
 	<?php if ($show_revision !== false) : ?>
 
-		<h3><?php printf( /* translators: %s: revision date */ __('Revision created on %s', 'humanstxt'), date_i18n( /* translators: DO NOT TRANSLATE! */ _x('j F, Y @ G:i:s', 'revision date format'), $revisions[$show_revision]['date'])) ?></h3>
+		<h3><?php printf( /* translators: %s: revision date */ __('Revision created on %s', 'humanstxt'), date_i18n( /* translators: DO NOT TRANSLATE! */ _x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$show_revision]['date']))) ?></h3>
 		<pre id="revision-preview" class="postbox"><?php echo esc_html($revisions[$show_revision]['content']) ?></pre>
 		<p class="submit"><a href="<?php echo wp_nonce_url(add_query_arg(array('revision' => $show_revision, 'action' => 'restore'), HUMANSTXT_OPTIONS_URL), 'restore-humanstxt_'.$show_revision) ?>" class="button-primary"><?php _e('Restore Revision', 'humanstxt') ?></a></p>
 
@@ -654,8 +658,8 @@ function humanstxt_revisions_page() : void
 			<table class="form-table ie-fixed">
 				<tr>
 					<th class="th-full">
-						<span class="alignleft"><?php printf(__('Older: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */ _x('j F, Y @ G:i:s', 'revision date format'), $revisions[$_GET['left']]['date'])) ?></span>
-						<span class="alignright"><?php printf(__('Newer: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */ _x('j F, Y @ G:i:s', 'revision date format'), $revisions[$_GET['right']]['date'])) ?></span>
+						<span class="alignleft"><?php printf(__('Older: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */ _x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$_GET['left']]['date']))) ?></span>
+						<span class="alignright"><?php printf(__('Newer: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */ _x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$_GET['right']]['date']))) ?></span>
 					</th>
 				</tr>
 				<tr>
@@ -708,12 +712,12 @@ function humanstxt_revisions_page() : void
 						<th scope="row"><input type="radio" name="left" value="<?php echo $key ?>"<?php checked($key === $left) ?> /></th>
 						<th scope="row"><input type="radio" name="right" value="<?php echo $key ?>"<?php checked($key === $right) ?> /></th>
 						<td>
-							<?php $date = '<a href="'.esc_url(add_query_arg(array('revision' => $key), HUMANSTXT_REVISIONS_URL)).'">'.date_i18n(_x('j F, Y @ G:i', 'revision date format'), $revision['date']).'</a>'?>
+							<?php $date = '<a href="'.esc_url(add_query_arg(array('revision' => $key), HUMANSTXT_REVISIONS_URL)).'">'.date_i18n(_x('j F, Y @ G:i', 'revision date format'), intval($revision['date'])).'</a>'?>
 							<?php printf($key === $live_revision ? /* translators: DO NOT TRANSLATE! */ __('%1$s [Current Revision]') : '%s', $date) ?>
 						</td>
 						<td>
 							<?php if ($revision['user'] > 0) : ?>
-								<?php echo get_the_author_meta('display_name', $revision['user']); ?>
+								<?php echo get_the_author_meta('display_name', intval($revision['user'])); ?>
 							<?php endif; ?>
 						</td>
 						<td class="action-links">
