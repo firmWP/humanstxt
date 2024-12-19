@@ -355,7 +355,7 @@ function humanstxt_import_file()
  * humans.txt plugins to avoid conflicts.
  *
  * @param string $plugin_file WordPress plugin path
- * @param string $plugin_data Plugin informations
+ * @param array $plugin_data Plugin informations
  * @param string $status Plugin context: mustuse, dropins, etc.
  */
 function humanstxt_plugin_notice($plugin_file, $plugin_data, $status)
