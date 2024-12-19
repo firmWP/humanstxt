@@ -162,7 +162,7 @@ function humanstxt_callback_wptimezone() {
 	$offset = get_option( 'gmt_offset' );
 	$offset = sprintf( '%s%02d:%02d', ( $offset < 0 ? '-' : '+' ), abs( $offset ), abs( ( $offset * 3600 ) % 3600 ) / 60 );
 	$timezone = get_option( 'timezone_string' );
-	return $timezone !== false || $timezone === '' ? $offset : $timezone . ' (' . $offset . ')';
+	return $timezone === false || $timezone === '' ? $offset : $timezone . ' (' . $offset . ')';
 }
 endif;
 
@@ -324,7 +324,7 @@ if ( ! function_exists( 'humanstxt_callback_wpplugins' ) ) :
  */
 function humanstxt_callback_wpplugins() {
 	$active_plugins = get_option( 'active_plugins', array() );
-	if ( is_array( $active_plugins ) && count( $active_plugins ) === 0 ) {
+	if ( is_array( $active_plugins ) && count( $active_plugins ) !== 0 ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		foreach ( $active_plugins as $key => $file ) {
 			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false );

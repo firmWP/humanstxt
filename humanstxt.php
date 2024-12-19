@@ -329,7 +329,7 @@ function _humanstxt_shortcode($attributes)
             unset($classes[$key]);
         }
     }
-    $class = $classes === '' ? '' : ' class="'.implode(' ', $classes).'"';
+    $class = count($classes) === 0 ? '' : ' class="'.implode(' ', $classes).'"';
 
     // wrap the output?
     if ($wrap) {
@@ -575,11 +575,6 @@ function humanstxt_variables()
 function humanstxt_valid_variables()
 {
     $variables = humanstxt_variables();
-
-    // return empty array if $variables is empty or not an array
-    if (!is_array($variables) || count($variables) === 0) {
-        return array();
-    }
 
     foreach ($variables as $key => $variable) {
         // delete if variable hasn't enought params
