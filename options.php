@@ -647,7 +647,7 @@ function humanstxt_revisions_page()
 
 		<?php if ($_GET['left'] === $_GET['right']) : ?>
 			<div class="error"><p><?php _e('You cannot compare a revision to itself.', 'humanstxt') ?></p></div>
-		<?php elseif (!($diff = wp_text_diff($revisions[$_GET['left']]['content'], $revisions[$_GET['right']]['content']))) : ?>
+		<?php elseif (wp_text_diff($revisions[$_GET['left']]['content'], $revisions[$_GET['right']]['content']) !== '') : ?>
 			<div class="error"><p><?php _e('These revisions are identical.') ?></p></div>
 		<?php else : ?>
 
@@ -659,7 +659,7 @@ function humanstxt_revisions_page()
 					</th>
 				</tr>
 				<tr>
-					<td><div class="pre"><?php echo $diff; ?></div></td>
+					<td><div class="pre"><?php echo wp_text_diff($revisions[$_GET['left']]['content'], $revisions[$_GET['right']]['content']); ?></div></td>
 				</tr>
 			</table>
 

@@ -368,7 +368,7 @@ function humanstxt_load_options()
 
     // already loaded?
     if (is_null($humanstxt_options)) {
-        $humanstxt_options = get_option('humanstxt_options') ? get_option('humanstxt_options') : array();
+        $humanstxt_options = get_option('humanstxt_options') !== false ? get_option('humanstxt_options') : array();
 
         // populate with defaults options if missing...
         foreach ($humanstxt_defaults as $option => $value) {
