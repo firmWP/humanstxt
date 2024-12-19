@@ -82,8 +82,9 @@ function humanstxt_admin_init() : void
 
         // restore a revision?
         if (isset($_GET['action'], $_GET['revision']) && $_GET['action'] === 'restore') {
-            check_admin_referer('restore-humanstxt_'.$_GET['revision']);
-            humanstxt_restore_revision($_GET['revision']);
+						$revision = filter_input(INPUT_GET, 'revision', FILTER_VALIDATE_INT | FILTER_SANITIZE_NUMBER_INT);
+            check_admin_referer('restore-humanstxt_' . $revision);
+            humanstxt_restore_revision($revision);
         }
 
         // import & rename physical humans.txt file?
@@ -137,12 +138,15 @@ function humanstxt_is_wp(string $version) : bool
  */
 function humanstxt_admin_menu() : void
 {
-    $roles = humanstxt_option('roles');
+	  /** @var array<string> */
+    $roles = is_array(humanstxt_option('roles')) ? humanstxt_option('roles') : array();
     array_unshift($roles, 'administrator'); // admins can always edit
 
     // loop through all roles that can edit the humans.txt and
     // add options page if the current user has one of the required roles
     foreach ($roles as $role) {
+				/** @var string */
+				$role = strval($role);
         if (current_user_can($role)) {
             $plugin_page = add_options_page(__('Humans TXT', 'humanstxt'), __('Humans TXT', 'humanstxt'), $role, 'humanstxt', 'humanstxt_options');
             break;
@@ -253,7 +257,8 @@ function humanstxt_update_options() : void
     }
 
     if (isset($_POST['humanstxt_content'])) {
-        humanstxt_update_content(humanstxt_content_normalize(stripslashes($_POST['humanstxt_content'])));
+				$content = (string) filter_input (INPUT_POST, 'humanstxt_content', FILTER_SANITIZE_STRING);
+        humanstxt_update_content(humanstxt_content_normalize(stripslashes($content)));
     }
 
     wp_redirect(add_query_arg(array('settings-updated' => '1'), HUMANSTXT_OPTIONS_URL));
@@ -276,7 +281,7 @@ function humanstxt_restore_revision(int $revision) : null
         return null;
     }
 
-    humanstxt_update_content($revisions[$revision]['content']);
+    humanstxt_update_content(strval($revisions[$revision]['content']));
 
     wp_redirect(add_query_arg(array('revision-restored' => '1'), HUMANSTXT_OPTIONS_URL));
     exit;
@@ -384,8 +389,7 @@ function humanstxt_rating()
         }
     }
 
-    // return plugin rating when available
-    if (!is_wp_error($api) && isset($api->rating, $api->num_ratings)) {
+		if  (is_object($api) && !is_wp_error($api) && property_exists($api , 'rating') && property_exists($api , 'num_ratings')) {
         return array('rating' => $api->rating, 'votes' => $api->num_ratings);
     }
 
@@ -518,7 +522,7 @@ function humanstxt_options_page() : void
 							<legend class="screen-reader-text"><span><?php _e('Editing Permissions', 'humanstxt') ?></span></legend>
 							<p><?php _e('Roles that can edit the content of the humans.txt file', 'humanstxt') ?>:</p>
 							<?php
-                                $humanstxt_roles = humanstxt_option('roles');
+    $humanstxt_roles = is_array(humanstxt_option('roles')) ? humanstxt_option('roles') : array();
     $wordpress_roles = get_editable_roles();
     unset($wordpress_roles['subscriber']); ?>
 							<?php foreach ($wordpress_roles as $role => $details) : ?>
@@ -638,20 +642,20 @@ function humanstxt_revisions_page() : void
     krsort($revisions);
 		if (count($revisions) !== 0):
 			$live_revision = max(array_keys($revisions));
-			$show_revision = isset($_GET['revision']) && isset($revisions[$_GET['revision']]) ? intval($_GET['revision']) : false;
+			$show_revision = isset($_GET['revision']) && isset($revisions[$_GET['revision']]) ? filter_input(INPUT_GET, 'revision', FILTER_VALIDATE_INT ) : false;
 		endif;
 		?>
 	<?php if ($show_revision !== false) : ?>
 
 		<h3><?php printf( /* translators: %s: revision date */ __('Revision created on %s', 'humanstxt'), date_i18n( /* translators: DO NOT TRANSLATE! */ _x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$show_revision]['date']))) ?></h3>
-		<pre id="revision-preview" class="postbox"><?php echo esc_html($revisions[$show_revision]['content']) ?></pre>
+		<pre id="revision-preview" class="postbox"><?php echo esc_html(strval($revisions[$show_revision]['content'])) ?></pre>
 		<p class="submit"><a href="<?php echo wp_nonce_url(add_query_arg(array('revision' => $show_revision, 'action' => 'restore'), HUMANSTXT_OPTIONS_URL), 'restore-humanstxt_'.$show_revision) ?>" class="button-primary"><?php _e('Restore Revision', 'humanstxt') ?></a></p>
 
 	<?php elseif (isset($_GET['action'], $_GET['left'], $_GET['right']) && $_GET['action'] === 'compare' && isset($revisions[$_GET['left']], $revisions[$_GET['right']])) : ?>
 
 		<?php if ($_GET['left'] === $_GET['right']) : ?>
 			<div class="error"><p><?php _e('You cannot compare a revision to itself.', 'humanstxt') ?></p></div>
-		<?php elseif (wp_text_diff($revisions[$_GET['left']]['content'], $revisions[$_GET['right']]['content']) !== '') : ?>
+		<?php elseif (wp_text_diff(strval($revisions[$_GET['left']]['content']), strval($revisions[$_GET['right']]['content'])) !== '') : ?>
 			<div class="error"><p><?php _e('These revisions are identical.') ?></p></div>
 		<?php else : ?>
 
@@ -663,7 +667,7 @@ function humanstxt_revisions_page() : void
 					</th>
 				</tr>
 				<tr>
-					<td><div class="pre"><?php echo wp_text_diff($revisions[$_GET['left']]['content'], $revisions[$_GET['right']]['content']); ?></div></td>
+					<td><div class="pre"><?php echo wp_text_diff(strval($revisions[$_GET['left']]['content']), strval($revisions[$_GET['right']]['content'])); ?></div></td>
 				</tr>
 			</table>
 
@@ -706,8 +710,8 @@ function humanstxt_revisions_page() : void
 			<tbody>
 				<?php foreach ($revisions as $key => $revision) : ?>
 					<?php
-                        $left = isset($_GET['left']) && isset($revisions[$_GET['left']]) ? intval($_GET['left']) : (($show_revision === false) ? $live_revision - 1 : $show_revision);
-    $right = isset($_GET['right']) && isset($revisions[$_GET['right']]) ? intval($_GET['right']) : $live_revision; ?>
+                        $left = isset($_GET['left']) && isset($revisions[$_GET['left']]) ? filter_input(INPUT_GET, 'left', FILTER_VALIDATE_INT ): (($show_revision === false) ? $live_revision - 1 : $show_revision);
+    $right = isset($_GET['right']) && isset($revisions[$_GET['right']]) ? filter_input(INPUT_GET, 'right', FILTER_VALIDATE_INT )  : $live_revision; ?>
 					<tr<?php echo ($key === $show_revision) ? ' class="displayed-revision"' : '' ?>>
 						<th scope="row"><input type="radio" name="left" value="<?php echo $key ?>"<?php checked($key === $left) ?> /></th>
 						<th scope="row"><input type="radio" name="right" value="<?php echo $key ?>"<?php checked($key === $right) ?> /></th>

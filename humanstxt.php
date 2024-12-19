@@ -155,7 +155,7 @@ function humanstxt_init() : void
 {
     global $wp_rewrite;
 
-    $rewrite_rules = get_option('rewrite_rules');
+    $rewrite_rules = is_array(get_option('rewrite_rules')) ? get_option('rewrite_rules') : array();
 
     if (humanstxt_option('enabled') !== null) {
         add_filter('query_vars', 'humanstxt_query_vars');
@@ -167,13 +167,13 @@ function humanstxt_init() : void
         }
 
         // flush rewrite rules if ours is missing
-        if (!isset($rewrite_rules[ 'humans\.txt$' ])) {
+        if ( ! array_key_exists('humans\.txt$', $rewrite_rules)) {
             flush_rewrite_rules(false);
         }
     } else {
 
         // flush rewrite rules if ours shouldn't be there
-        if (isset($rewrite_rules[ 'humans\.txt$' ])) {
+        if (array_key_exists('humans\.txt$', $rewrite_rules)) {
             flush_rewrite_rules(false);
         }
     }
@@ -379,10 +379,11 @@ function humanstxt_load_options() : void
     // already loaded?
     if (is_null($humanstxt_options)) {
         $humanstxt_options = get_option('humanstxt_options') !== false ? get_option('humanstxt_options') : array();
+        $humanstxt_options = is_array($humanstxt_options) ? $humanstxt_options : array();
 
         // populate with defaults options if missing...
         foreach ($humanstxt_defaults as $option => $value) {
-            if (!isset($humanstxt_options[ $option ])) {
+            if (array_key_exists($option, $humanstxt_options) === false ) {
                 $humanstxt_options[ $option ] = $value;
             }
         }
@@ -447,7 +448,7 @@ function humanstxt_content_normalize(string $string) : string
  *
  * @since 1.1.0
  *
- * @return array<array<string>>|false Revisions of the humans.txt file
+ * @return array<array<int|string>>|false Revisions of the humans.txt file
  */
 function humanstxt_revisions() : array|false
 {
@@ -469,9 +470,10 @@ function humanstxt_revisions() : array|false
             ),
         );
         add_option('humanstxt_revisions', $revisions, '', false);
+        return $revisions;
     }
 
-    return $revisions;
+    return false;
 }
 
 /**

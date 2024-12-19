@@ -9,8 +9,8 @@ if ( ! function_exists( 'humanstxt_callback_ip' ) ) :
  *
  * @return string Value of $_SERVER['SERVER_ADDR'], or NULL
  */
-function humanstxt_callback_ip() {
-	return isset( $_SERVER['SERVER_ADDR'] ) ? $_SERVER['SERVER_ADDR'] : null;
+function humanstxt_callback_ip() : ?string {
+	return isset( $_SERVER['SERVER_ADDR'] ) ? filter_input(INPUT_SERVER, 'SERVER_ADDR', FILTER_NULL_ON_FAILURE ) : null;
 }
 endif;
 
@@ -22,7 +22,7 @@ if ( ! function_exists( 'humanstxt_callback_os' ) ) :
  *
  * @return string Value of php_uname('s')
  */
-function humanstxt_callback_os() {
+function humanstxt_callback_os() : string {
 	return php_uname( 's' ); // PHP_OS
 }
 endif;
@@ -37,8 +37,8 @@ if ( ! function_exists( 'humanstxt_callback_server' ) ) :
  *
  * @return string Value of $_SERVER['SERVER_SOFTWARE']
  */
-function humanstxt_callback_server() {
-	return isset( $_SERVER['SERVER_SOFTWARE'] ) ? $_SERVER['SERVER_SOFTWARE'] : null;
+function humanstxt_callback_server() : ?string {
+	return isset( $_SERVER['SERVER_SOFTWARE'] ) ? filter_input(INPUT_SERVER, 'SERVER_SOFTWARE', FILTER_NULL_ON_FAILURE) : null;
 }
 endif;
 
@@ -159,10 +159,19 @@ if ( ! function_exists( 'humanstxt_callback_wptimezone' ) ) :
  * @return string WordPress timezone.
  */
 function humanstxt_callback_wptimezone() {
-	$offset = get_option( 'gmt_offset' );
-	$offset = sprintf( '%s%02d:%02d', ( $offset < 0 ? '-' : '+' ), abs( $offset ), abs( ( $offset * 3600 ) % 3600 ) / 60 );
-	$timezone = get_option( 'timezone_string' );
-	return $timezone === false || $timezone === '' ? $offset : $timezone . ' (' . $offset . ')';
+	$offset = get_option( 'gmt_offset', 0 );
+	$timezone = get_option( 'timezone_string', '' );
+	if (is_numeric($offset)) {
+		$offset = floatval($offset);
+		$offset = sprintf( '%s%02d:%02d', ( $offset < 0 ? '-' : '+' ), abs( $offset ), abs( ( $offset * 3600 ) % 3600 ) / 60 );
+	}
+	else {
+		$offset = '';
+	}
+	if ( ! is_string($timezone) ) {
+		$timezone = '';
+	}
+	return $timezone === '' ? $offset : sprintf( '%s (%s)', $timezone, $offset);
 }
 endif;
 
@@ -327,8 +336,10 @@ function humanstxt_callback_wpplugins() {
 	if ( is_array( $active_plugins ) && count( $active_plugins ) !== 0 ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		foreach ( $active_plugins as $key => $file ) {
-			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false );
-			$active_plugins[ $key ] = $plugin_data['Name'];
+			if ( is_string( $file ) ) {
+				$plugin_data = get_plugin_data( WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $file, false );
+				$active_plugins[ $key ] = $plugin_data['Name'];
+			}
 		}
 		$separator = apply_filters( 'humanstxt_separator', ', ' );
 		$separator = apply_filters( 'humanstxt_plugins_separator', $separator );
