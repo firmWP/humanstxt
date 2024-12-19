@@ -94,7 +94,7 @@ function humanstxt_callback_timezone() {
 	$offset = date( 'Z' );
 	$offset = sprintf( '%s%02d:%02d', ($offset < 0 ? '-' : '+'), abs( $offset / 3600 ), abs( $offset % 3600 ) / 60 );
 	$timezone = function_exists( 'date_default_timezone_get' ) ? date_default_timezone_get() : null;
-	return empty( $timezone ) || $timezone == 'UTC' ? $offset : $timezone . ' (' . $offset . ')';
+	return is_null( $timezone ) || $timezone === '' || $timezone === 'UTC' ? $offset : $timezone . ' (' . $offset . ')';
 }
 endif;
 
@@ -162,7 +162,7 @@ function humanstxt_callback_wptimezone() {
 	$offset = get_option( 'gmt_offset' );
 	$offset = sprintf( '%s%02d:%02d', ( $offset < 0 ? '-' : '+' ), abs( $offset ), abs( ( $offset * 3600 ) % 3600 ) / 60 );
 	$timezone = get_option( 'timezone_string' );
-	return empty( $timezone ) ? $offset : $timezone . ' (' . $offset . ')';
+	return $timezone !== false || $timezone === '' ? $offset : $timezone . ' (' . $offset . ')';
 }
 endif;
 
@@ -230,7 +230,12 @@ function humanstxt_callback_wplanguage() {
 		$languages = qtrans_getSortedLanguages();
 		foreach ( $languages as $key => $language ) {
 			// try to get internatinal language name
-			$languages[ $key ] = isset( $q_config[ 'locale' ][ $language ]) ? format_code_lang( $language ) : qtrans_getLanguageName( $language );
+			if ( !isset( $q_config[ 'locale' ][ $language ] ) ) {
+				$languages[ $key ] = format_code_lang( $language );
+			}
+			elseif ( function_exists( 'qtrans_getLanguageName' ) ) {
+				$languages[ $key ] = qtrans_getLanguageName( $language );
+			}
 		}
 
 		$active_languages = implode( $separator, $languages );
@@ -268,7 +273,7 @@ if ( ! function_exists( 'humanstxt_callback_lastupdate' ) ) :
 function humanstxt_callback_lastupdate() {
 	global $wpdb;
 	$last_edit = $wpdb->get_var( 'SELECT post_modified FROM '.$wpdb->posts.' WHERE post_status = "publish" AND (post_type = "page" OR post_type = "post") ORDER BY post_modified DESC LIMIT 1' );
-	if ( !empty( $last_edit ) ) {
+	if ( $last_edit !== '' ) {
 		$last_edit = date(apply_filters( 'humanstxt_lastupdate_format', 'Y/m/d' ), strtotime( $last_edit ));
 	}
 	return apply_filters( 'humanstxt_lastupdate', $last_edit );
@@ -290,15 +295,16 @@ if ( ! function_exists( 'humanstxt_callback_wpauthors' ) ) :
 function humanstxt_callback_wpauthors() {
 	global $wpdb;
 	$authors = null;
+	$author_ids = array();
 	// 3.1's get_users() is neat, but let's keep it downwards compatible...
 	$users = (array) $wpdb->get_results( 'SELECT ID, display_name, user_email, user_url FROM ' . $wpdb->users . ' INNER JOIN ' . _get_meta_table('user') . ' ON ID = user_id WHERE meta_key = "' . $wpdb->get_blog_prefix() . 'user_level" AND CAST(meta_value AS CHAR) != 0 ORDER BY display_name ASC' );
-	if ( !empty( $users ) ) {
+	if ( count( $users ) !== 0 ) {
 		foreach ( $users as $user) $author_ids[] = $user->ID;
 		$authors_posts = count_many_users_posts( $author_ids );
-		$format = apply_filters( 'humanstxt_authors_format', "\t" . '%1$s: %2$s' . "\n\n");
+		$format = apply_filters( 'humanstxt_authors_formis_null( $timezone ) ||at', "\t" . '%1$s: %2$s' . "\n\n");
 		foreach ( $users as $user ) {
-			if ( $authors_posts[ $user->ID ] > 0 && !empty( $user->display_name ) ) {
-				$contact = empty( $user->user_url ) ? $user->user_email : $user->user_url;
+			if ( $authors_posts[ $user->ID ] > 0 && !isset( $user->display_name ) ) {
+				$contact = isset( $user->user_url ) ? $user->user_email : $user->user_url;
 				$authors .= sprintf( $format, $user->display_name, $contact );
 			}
 		}
@@ -318,7 +324,7 @@ if ( ! function_exists( 'humanstxt_callback_wpplugins' ) ) :
  */
 function humanstxt_callback_wpplugins() {
 	$active_plugins = get_option( 'active_plugins', array() );
-	if ( is_array( $active_plugins ) && !empty( $active_plugins ) ) {
+	if ( is_array( $active_plugins ) && count( $active_plugins ) === 0 ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		foreach ( $active_plugins as $key => $file ) {
 			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $file, false );
@@ -351,11 +357,11 @@ function humanstxt_callback_wptheme() {
 		$link = htmlspecialchars_decode( strip_tags( $theme->display( 'AuthorURI', false ) ) );
 
 		$output = $name;
-		if ( !empty( $version ) )
+		if ( $version !== '' )
 			$output .= ' (' . $version . ')';
-		if ( !empty( $author ) )
+		if ( $author !== '' )
 			$output .= ' by ' . $author;
-		if ( !empty( $link ) )
+		if ( $link !== '' )
 			$output .= ' (' . $link . ')';
 
 	}
@@ -372,7 +378,7 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_name' ) ) :
 function humanstxt_callback_wptheme_name() {
 	$theme = wp_get_theme();
 	$name = htmlspecialchars_decode( strip_tags( $theme->display( 'Name', false ) ) );
-	return empty( $name ) ? null : $name;
+	return $name === '' ? null : $name;
 }
 endif;
 
@@ -385,7 +391,7 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_version' ) ) :
 function humanstxt_callback_wptheme_version() {
 	$theme = wp_get_theme();
 	$version = htmlspecialchars_decode( strip_tags( $theme->display( 'Version', false ) ) );
-	return empty( $version ) ? null : $version;
+	return $version === '' ? null : $version;
 }
 endif;
 
@@ -398,7 +404,7 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_author' ) ) :
 function humanstxt_callback_wptheme_author() {
 	$theme = wp_get_theme();
 	$author = htmlspecialchars_decode( strip_tags( $theme->display( 'Author', false ) ) );
-	return empty( $author ) ? null : $author;
+	return $author === '' ? null : $author;
 }
 endif;
 
@@ -411,6 +417,6 @@ if ( ! function_exists( 'humanstxt_callback_wptheme_author_link' ) ) :
 function humanstxt_callback_wptheme_author_link() {
 	$theme = wp_get_theme();
 	$link = htmlspecialchars_decode( strip_tags( $theme->display( 'AuthorURI', false ) ) );
-	return empty( $link ) ? null : $link;
+	return $link === '' ? null : $link;
 }
 endif;

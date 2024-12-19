@@ -157,12 +157,12 @@ function humanstxt_init()
 
     $rewrite_rules = get_option('rewrite_rules');
 
-    if (humanstxt_option('enabled')) {
+    if (humanstxt_option('enabled') !== null) {
         add_filter('query_vars', 'humanstxt_query_vars');
         add_rewrite_rule('humans\.txt$', $wp_rewrite->index . '?humans=1', 'top');
 
         // register author link tag action if enabled
-        if (humanstxt_option('authortag')) {
+        if (humanstxt_option('authortag') !== null) {
             add_action('wp_head', 'humanstxt_authortag', 1);
         }
 
@@ -304,7 +304,7 @@ function _humanstxt_shortcode($attributes)
 
         if ($filter) {
             // encode email addresses to block spam bots
-            $content = preg_replace_callback('{(?:mailto:)?((?:[-!#$%&\'*+/=?^_`.{|}~\w\x80-\xFF]+|".*?")\@(?:[-a-z0-9\x80-\xFF]+(\.[-a-z0-9\x80-\xFF]+)*\.[a-z]+|\[[\d.a-fA-F:]+\]))}xi', create_function('$matches', 'return antispambot( $matches[0] );'), $content);
+            $content = preg_replace_callback('{(?:mailto:)?((?:[-!#$%&\'*+/=?^_`.{|}~\w\x80-\xFF]+|".*?")\@(?:[-a-z0-9\x80-\xFF]+(\.[-a-z0-9\x80-\xFF]+)*\.[a-z]+|\[[\d.a-fA-F:]+\]))}xi', '_humanstxt_antispambot_function', $content);
         }
 
         if ($pre) {
@@ -318,18 +318,18 @@ function _humanstxt_shortcode($attributes)
 
     // do we have an id attribute?
     $id = preg_replace('~[^a-z0-9_-]~i', '', $id);
-    if (!empty($id)) {
+    if ($id !== '') {
         $id = ' id="'.$id.'"';
     }
 
     // do we have a class attribute?
     $classes = preg_replace('~[^a-z0-9_-]~i', '', $classes);
     foreach ($classes as $key => $classname) {
-        if (empty($classname)) {
+        if ($classname === '') {
             unset($classes[$key]);
         }
     }
-    $class = empty($classes) ? '' : ' class="'.implode(' ', $classes).'"';
+    $class = $classes === '' ? '' : ' class="'.implode(' ', $classes).'"';
 
     // wrap the output?
     if ($wrap) {
@@ -337,6 +337,10 @@ function _humanstxt_shortcode($attributes)
     }
 
     return apply_filters('humanstxt_shortcode_output', $content, $attributes);
+}
+
+function _humanstxt_antispambot_function($matches) {
+    return antispambot($matches[0]);
 }
 
 /**
@@ -364,7 +368,7 @@ function humanstxt_load_options()
 
     // already loaded?
     if (is_null($humanstxt_options)) {
-        $humanstxt_options = get_option('humanstxt_options');
+        $humanstxt_options = get_option('humanstxt_options') ? get_option('humanstxt_options') : array();
 
         // populate with defaults options if missing...
         foreach ($humanstxt_defaults as $option => $value) {
@@ -447,11 +451,13 @@ function humanstxt_revisions()
 
     // add or reset option?
     if (!is_array($revisions)) {
-        $revisions = array(array(
-            'date' => current_time('timestamp'),
-            'user' => 0,
-            'content' => humanstxt_content()
-        ));
+        $revisions = array(
+            array(
+                'date' => current_time('timestamp'),
+                'user' => 0,
+                'content' => humanstxt_content()
+            ),
+        );
         add_option('humanstxt_revisions', $revisions, '', 'no');
     }
 
@@ -471,7 +477,11 @@ function humanstxt_add_revision($content)
 {
     $current_user = wp_get_current_user();
     $revisions = humanstxt_revisions();
-    $revisions[] = array( 'date' => current_time('timestamp'), 'user' => $current_user->ID, 'content' => $content );
+    $revisions[] = array(
+        'date' => current_time('timestamp'),
+        'user' => $current_user->ID,
+        'content' => $content,
+    );
 
     // limit amount of revisions (with PHP4 compatibility)
     $keys = array_slice(array_keys($revisions), -abs((int) apply_filters('humanstxt_max_revisions', HUMANSTXT_MAX_REVISIONS)), count($revisions));
@@ -567,7 +577,7 @@ function humanstxt_valid_variables()
     $variables = humanstxt_variables();
 
     // return empty array if $variables is empty or not an array
-    if (!is_array($variables) || empty($variables)) {
+    if (!is_array($variables) || count($variables) === 0) {
         return array();
     }
 
