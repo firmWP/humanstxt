@@ -409,7 +409,7 @@ function humanstxt_content()
     // add option if missing
     if ($content === false) {
         $content = humanstxt_default_content();
-        add_option('humanstxt_content', $content, '', 'no');
+        add_option('humanstxt_content', $content, '', false);
     }
 
     return apply_filters('humanstxt_content', $content);
@@ -458,7 +458,7 @@ function humanstxt_revisions()
                 'content' => humanstxt_content()
             ),
         );
-        add_option('humanstxt_revisions', $revisions, '', 'no');
+        add_option('humanstxt_revisions', $revisions, '', false);
     }
 
     return $revisions;
