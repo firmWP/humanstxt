@@ -290,11 +290,11 @@ if ( ! function_exists( 'humanstxt_callback_wpauthors' ) ) :
  *
  * @global $wpdb
  *
- * @return string|null A list of active authors
+ * @return string A list of active authors or empty string.
  */
 function humanstxt_callback_wpauthors() {
 	global $wpdb;
-	$authors = null;
+	$authors = '';
 	$author_ids = array();
 	// 3.1's get_users() is neat, but let's keep it downwards compatible...
 	$users = (array) $wpdb->get_results( 'SELECT ID, display_name, user_email, user_url FROM ' . $wpdb->users . ' INNER JOIN ' . _get_meta_table('user') . ' ON ID = user_id WHERE meta_key = "' . $wpdb->get_blog_prefix() . 'user_level" AND CAST(meta_value AS CHAR) != 0 ORDER BY display_name ASC' );

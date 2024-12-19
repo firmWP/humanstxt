@@ -128,7 +128,7 @@ function humanstxt_version_warning() : void
  */
 function humanstxt_is_wp(string $version) : bool
 {
-    return version_compare(preg_replace('~[^0-9.]~', '', get_bloginfo('version')), $version, '>=');
+    return version_compare(preg_replace('~[^0-9.]~', '', get_bloginfo('version')) ?? '', $version, '>=');
 }
 
 /**
@@ -202,12 +202,12 @@ function humanstxt_contextual_help() : void
 
     $screen = get_current_screen();
 
-    if (humanstxt_is_wp('3.3')) {
+    if (humanstxt_is_wp('3.3') && ! is_null($screen)) {
         $variables = '<p>'.$variables.'</p>';
         $screen->add_help_tab(array('id' => 'help-humanstxt-file', 'title' => __('Humans TXT File', 'humanstxt'), 'content' => $humanstxt));
         $screen->add_help_tab(array('id' => 'help-humanstxt-vars', 'title' => __('Variables', 'humanstxt'), 'content' => $variables));
         $screen->set_help_sidebar($more);
-    } else {
+    } elseif ( ! is_null($screen) ) {
         $variables = sprintf('<p><strong>%s</strong> &mdash; %s</p>', __('Variables', 'humanstxt'), $variables);
         add_contextual_help($screen->id, $humanstxt.$variables.$more);
     }
@@ -305,7 +305,7 @@ function humanstxt_import_file() : void
 
     // don't bother requesting filesystem credentials
     if (get_filesystem_method() === 'direct') {
-        if (!WP_Filesystem()) {
+        if ( ! (bool)	WP_Filesystem() ) {
             $import = false;
         }
 

@@ -284,7 +284,7 @@ function _humanstxt_shortcode(array $attributes) : string
         if (! (bool) $pre) {
             $headline_replacement = '<strong class="humanstxt-headline">$1</strong>';
             $headline_replacement = apply_filters('humanstxt_shortcode_headline_replacement', $headline_replacement);
-            $content = preg_replace('~/\*(.+?)\*/~', $headline_replacement, $content);
+            $content = preg_replace('~/\*(.+?)\*/~', $headline_replacement, $content) ?? $content;
         }
 
         // make URLs clickable
@@ -293,24 +293,24 @@ function _humanstxt_shortcode(array $attributes) : string
             if (!is_null($_content)) {
                 $content = $_content;
             }
-            $content = preg_replace_callback('#([\s>])((www)\.[\w\\x80-\\xff\#$%&~/.\-;:=,?@\[\]+]+)#is', '_make_web_ftp_clickable_cb', $content);
+            $content = preg_replace_callback('#([\s>])((www)\.[\w\\x80-\\xff\#$%&~/.\-;:=,?@\[\]+]+)#is', '_make_web_ftp_clickable_cb', $content) ?? $content;
         }
 
         // make email addresses clickable
         if (((bool) $clickable && (bool) $emails) || (! (bool) $clickable && (bool) $emails && isset($attributes[ 'emails' ]))) {
-            $content = preg_replace_callback('#([\s>])([.0-9a-z_+-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,})#i', '_make_email_clickable_cb', $content);
+            $content = preg_replace_callback('#([\s>])([.0-9a-z_+-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,})#i', '_make_email_clickable_cb', $content) ?? $content;
         }
 
         // make Twitter account names clickable
         if (((bool) $clickable && (bool) $twitter) || (! (bool) $clickable && (bool) $twitter && isset($attributes[ 'twitter' ]))) {
             $twitter_replacement = '$1<a href="http://twitter.com/$2" rel="external">@$2</a>';
             $twitter_replacement = apply_filters('humanstxt_shortcode_twitter_replacement', $twitter_replacement);
-            $content = preg_replace('/(^|[^a-z0-9_])[@＠]([a-z0-9_]{1,20})([@＠\xC0-\xD6\xD8-\xF6\xF8-\xFF]?)/iu', $twitter_replacement, $content);
+            $content = preg_replace('/(^|[^a-z0-9_])[@＠]([a-z0-9_]{1,20})([@＠\xC0-\xD6\xD8-\xF6\xF8-\xFF]?)/iu', $twitter_replacement, $content) ?? $content;
         }
 
         if ( (bool) $filter ) {
             // encode email addresses to block spam bots
-            $content = preg_replace_callback('{(?:mailto:)?((?:[-!#$%&\'*+/=?^_`.{|}~\w\x80-\xFF]+|".*?")\@(?:[-a-z0-9\x80-\xFF]+(\.[-a-z0-9\x80-\xFF]+)*\.[a-z]+|\[[\d.a-fA-F:]+\]))}xi', '_humanstxt_antispambot_function', $content);
+            $content = preg_replace_callback('{(?:mailto:)?((?:[-!#$%&\'*+/=?^_`.{|}~\w\x80-\xFF]+|".*?")\@(?:[-a-z0-9\x80-\xFF]+(\.[-a-z0-9\x80-\xFF]+)*\.[a-z]+|\[[\d.a-fA-F:]+\]))}xi', '_humanstxt_antispambot_function', $content) ?? $content;
         }
 
         if ( (bool) $pre ) {
