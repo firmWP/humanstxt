@@ -1,6 +1,13 @@
 <?php
+/**
+ * Humanstxt legacy functions
+ *
+ * @package Humanstxt
+ */
 
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * WP filter callback for 'admin_body_class'. Adds 'rtl' to
@@ -8,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  *
  * @since 1.1.1
  *
- * @param string $classes
- * @return string $classes
+ * @param string $classes The classes list.
+ * @return string $classes The modified classes list.
  */
 function humanstxt_admin_body_class( $classes ) {
 	if ( is_rtl() && strpos( $classes, 'rtl' ) === false ) {
@@ -18,5 +25,3 @@ function humanstxt_admin_body_class( $classes ) {
 	return $classes;
 }
 add_filter( 'admin_body_class', 'humanstxt_admin_body_class' );
-
-?>
