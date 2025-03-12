@@ -14,8 +14,9 @@ if ( ! function_exists( 'humanstxt_callback_ip' ) ) :
 	 *
 	 * @return string Value of $_SERVER['SERVER_ADDR'], or NULL
 	 */
-	function humanstxt_callback_ip(): ?string {
-		return isset( $_SERVER['SERVER_ADDR'] ) ? filter_input( INPUT_SERVER, 'SERVER_ADDR', FILTER_NULL_ON_FAILURE ) : null;
+	function humanstxt_callback_ip(): string {
+		$hostname = gethostname();
+		return gethostbyname(strval($hostname));
 	}
 endif;
 
@@ -44,7 +45,7 @@ if ( ! function_exists( 'humanstxt_callback_server' ) ) :
 	 * @return string Value of $_SERVER['SERVER_SOFTWARE']
 	 */
 	function humanstxt_callback_server(): ?string {
-		return isset( $_SERVER['SERVER_SOFTWARE'] ) ? filter_input( INPUT_SERVER, 'SERVER_SOFTWARE', FILTER_NULL_ON_FAILURE ) : null;
+		return isset( $_SERVER['SERVER_SOFTWARE'] ) ? filter_var( $_SERVER['SERVER_SOFTWARE'], FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE) : null;
 	}
 endif;
 
@@ -80,9 +81,9 @@ if ( ! function_exists( 'humanstxt_callback_mysqlversion' ) ) :
 	 *
 	 * @return string MySQL version.
 	 */
-	function humanstxt_callback_mysqlversion() {
+	function humanstxt_callback_mysqlversion() : ?string {
 		global $wpdb;
-		return $wpdb->db_version();
+		return ($wpdb instanceof wpdb) ? $wpdb->db_version() : 'unknown';
 	}
 endif;
 
@@ -187,11 +188,12 @@ if ( ! function_exists( 'humanstxt_callback_wpposts' ) ) :
 	 *
 	 * @since 1.0.4
 	 *
-	 * @return string Number of published posts
+	 * @return ?string Number of published posts
 	 */
-	function humanstxt_callback_wpposts() {
+	function humanstxt_callback_wpposts() : ?string {
 		$postcounts = wp_count_posts();
-		return apply_filters( 'humanstxt_postcount', $postcounts->publish );
+		$postcounts = apply_filters( 'humanstxt_postcount', $postcounts->publish ); 
+		return filter_var( $postcounts, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE );
 	}
 endif;
 
@@ -202,11 +204,12 @@ if ( ! function_exists( 'humanstxt_callback_wppages' ) ) :
 	 *
 	 * @since 1.0.4
 	 *
-	 * @return string Number of published pages
+	 * @return ?string Number of published pages
 	 */
-	function humanstxt_callback_wppages() {
+	function humanstxt_callback_wppages() : ?string {
 		$pagecounts = wp_count_posts( 'page' );
-		return apply_filters( 'humanstxt_pagecount', $pagecounts->publish );
+		$pagecounts = apply_filters( 'humanstxt_pagecount', $pagecounts->publish );
+		return filter_var( $pagecounts, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE );
 	}
 endif;
 
@@ -219,9 +222,9 @@ if ( ! function_exists( 'humanstxt_callback_wplanguage' ) ) :
 	 * @global $q_config
 	 * @global $xili_language
 	 *
-	 * @return string Name(s) of language(s).
+	 * @return ?string Name(s) of language(s).
 	 */
-	function humanstxt_callback_wplanguage() {
+	function humanstxt_callback_wplanguage() : ?string {
 
 		global $sitepress, $q_config, $xili_language;
 
@@ -230,46 +233,9 @@ if ( ! function_exists( 'humanstxt_callback_wplanguage' ) ) :
 		$separator = apply_filters( 'humanstxt_separator', ', ' );
 		$separator = apply_filters( 'humanstxt_languages_separator', $separator );
 
-		if ( defined( 'ICL_SITEPRESS_VERSION' ) ) { // is WPML/SitePress active?
-
-			$languages = $sitepress->get_active_languages();
-			foreach ( $languages as $code => $information ) {
-				$languages[ $code ] = $information['display_name'];
-			}
-
-			$active_languages = implode( $separator, $languages );
-
-		} elseif ( function_exists( 'qtrans_getSortedLanguages' ) ) { // is qTranslate active?
-
-			$languages = qtrans_getSortedLanguages();
-			foreach ( $languages as $key => $language ) {
-				// Try to get international language name.
-				if ( ! isset( $q_config['locale'][ $language ] ) ) {
-					$languages[ $key ] = format_code_lang( $language );
-				} elseif ( function_exists( 'qtrans_getLanguageName' ) ) {
-					$languages[ $key ] = qtrans_getLanguageName( $language );
-				}
-			}
-
-			$active_languages = implode( $separator, $languages );
-
-		} elseif ( defined( 'XILILANGUAGE_VER' ) ) { // is xili-language active?
-
-			$languages = $xili_language->get_listlanguages();
-			foreach ( $languages as $key => $language ) {
-				$languages[ $key ] = $language->description;
-			}
-
-			$active_languages = implode( $separator, $languages );
-
-		} else {
-
-			// just return the standard WordPress language...
-			$active_languages = format_code_lang( get_bloginfo( 'language' ) );
-
-		}
-
-		return apply_filters( 'humanstxt_languages', $active_languages );
+		$active_languages = format_code_lang( get_bloginfo( 'language' ) );
+		$active_languages = apply_filters( 'humanstxt_languages', $active_languages );
+		return filter_var( $active_languages, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE );
 	}
 endif;
 
@@ -280,12 +246,15 @@ if ( ! function_exists( 'humanstxt_callback_lastupdate' ) ) :
 	 * The final funtion result can be modified with the 'humanstxt_lastupdate' filter.
 	 *
 	 * @global $wpdb
-	 * @return string $last_edit Timestamp of last modified post/page.
+	 * @return ?string $last_edit Timestamp of last modified post/page.
 	 */
-	function humanstxt_callback_lastupdate() {
+	function humanstxt_callback_lastupdate() : ?string {
 		$last_edit = get_lastpostdate( 'blog' );
-		$last_edit = wp_date( apply_filters( 'humanstxt_lastupdate_format', 'Y/m/d' ), intval(strtotime( $last_edit ) ));
-		return apply_filters( 'humanstxt_lastupdate', $last_edit );
+		$format = filter_var(apply_filters( 'humanstxt_lastupdate_format', 'Y/m/d' ), FILTER_UNSAFE_RAW);
+		$format = false !== $format ? $format : '';
+		$last_edit = wp_date( $format, intval(strtotime( $last_edit ) ));
+		$last_edit = apply_filters( 'humanstxt_lastupdate', $last_edit );
+		return filter_var( $last_edit, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE );
 	}
 endif;
 
@@ -299,9 +268,9 @@ if ( ! function_exists( 'humanstxt_callback_wpauthors' ) ) :
 	 *
 	 * @global $wpdb
 	 *
-	 * @return string A list of active authors or empty string.
+	 * @return ?string A list of active authors or empty string.
 	 */
-	function humanstxt_callback_wpauthors() {
+	function humanstxt_callback_wpauthors() : ?string {
 		global $wpdb;
 		$authors    = '';
 		$author_ids = array();
@@ -315,18 +284,23 @@ if ( ! function_exists( 'humanstxt_callback_wpauthors' ) ) :
 		// $users = (array) $wpdb->get_results( 'SELECT ID, display_name, user_email, user_url FROM ' . $wpdb->users . ' INNER JOIN ' . _get_meta_table( 'user' ) . ' ON ID = user_id WHERE meta_key = "' . $wpdb->get_blog_prefix() . 'user_level" AND CAST(meta_value AS CHAR) != 0 ORDER BY display_name ASC' );
 		if ( 0 !== count( $users ) ) {
 			foreach ( $users as $user ) {
+				/** @var WP_User $user */
 				$author_ids[] = $user->ID;
 			}
-			$authors_posts = count_many_users_posts( $author_ids );
-			$format        = apply_filters( 'humanstxt_authors_format', "\t" . '%1$s: %2$s' . "\n\n" );
+			$authors_posts	= count_many_users_posts( $author_ids );
+			$format					= apply_filters( 'humanstxt_authors_format', "\t" . '%1$s: %2$s' . "\n\n" );
+			$format					= filter_var( $format, FILTER_UNSAFE_RAW );
+			$format					= false !== $format ? $format : '';
 			foreach ( $users as $user ) {
+				/** @var WP_User $user */
 				if ( 0 < $authors_posts[ $user->ID ] && ! isset( $user->display_name ) ) {
 					$contact  = ! isset( $user->user_url ) || '' === $user->user_url ? $user->user_email : $user->user_url;
 					$authors .= sprintf( $format, $user->display_name, $contact );
 				}
 			}
 		}
-		return apply_filters( 'humanstxt_authors', ltrim( $authors ) );
+		$authors = apply_filters( 'humanstxt_authors', ltrim( $authors ) );
+		return filter_var( $authors, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE );
 	}
 endif;
 
@@ -339,7 +313,7 @@ if ( ! function_exists( 'humanstxt_callback_wpplugins' ) ) :
 	 *
 	 * @return string|null $active_plugins List of active WP plugins.
 	 */
-	function humanstxt_callback_wpplugins() {
+	function humanstxt_callback_wpplugins() : ?string {
 		$active_plugins = get_option( 'active_plugins', array() );
 		if ( is_array( $active_plugins ) && count( $active_plugins ) !== 0 ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -351,7 +325,11 @@ if ( ! function_exists( 'humanstxt_callback_wpplugins' ) ) :
 			}
 			$separator      = apply_filters( 'humanstxt_separator', ', ' );
 			$separator      = apply_filters( 'humanstxt_plugins_separator', $separator );
+			$separator      = filter_var( $separator, FILTER_UNSAFE_RAW );
+			$separator      = false !== $separator ? $separator : '';
 			$active_plugins = apply_filters( 'humanstxt_plugins', $active_plugins );
+			$active_plugins = filter_var( $active_plugins, FILTER_REQUIRE_ARRAY);
+			$active_plugins = is_array( $active_plugins ) ? $active_plugins : array();
 			return implode( $separator, $active_plugins );
 		}
 		return null;
@@ -366,7 +344,7 @@ if ( ! function_exists( 'humanstxt_callback_wptheme' ) ) :
 	 *
 	 * @return string|null The theme's author name.
 	 */
-	function humanstxt_callback_wptheme() {
+	function humanstxt_callback_wptheme() : ?string {
 		$theme  = wp_get_theme();
 		$output = null;
 		if ( $theme->errors() === false ) {
@@ -397,7 +375,8 @@ if ( ! function_exists( 'humanstxt_callback_wptheme' ) ) :
 				$output .= ' (' . $link . ')';
 			}
 		}
-		return apply_filters( 'humanstxt_wptheme', $output );
+		$output = apply_filters( 'humanstxt_wptheme', $output );
+		return filter_var( $output, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE );
 	}
 endif;
 

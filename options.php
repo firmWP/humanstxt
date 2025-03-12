@@ -80,7 +80,8 @@ function humanstxt_admin_init(): void {
 
 		// restore a revision?
 		if ( isset( $_GET['action'], $_GET['revision'] ) && $_GET['action'] === 'restore' ) {
-						$revision = filter_input( INPUT_GET, 'revision', FILTER_VALIDATE_INT | FILTER_SANITIZE_NUMBER_INT );
+			$revision = filter_input( INPUT_GET, 'revision', FILTER_VALIDATE_INT );
+			$revision = absint( $revision );
 			check_admin_referer( 'restore-humanstxt_' . $revision );
 			humanstxt_restore_revision( $revision );
 		}
@@ -243,6 +244,7 @@ function humanstxt_update_content( string $content ): void {
  * @global $humanstxt_options
  */
 function humanstxt_update_options(): void {
+	/** @var array<string> $humanstxt_options */
 	global $humanstxt_options;
 
 	// only update the admin-only options if current user is an admin
@@ -259,7 +261,7 @@ function humanstxt_update_options(): void {
 	}
 
 	if ( isset( $_POST['humanstxt_content'] ) ) {
-				$content = (string) filter_input( INPUT_POST, 'humanstxt_content', FILTER_SANITIZE_STRING );
+				$content = (string) filter_input( INPUT_POST, 'humanstxt_content', FILTER_UNSAFE_RAW );
 		humanstxt_update_content( humanstxt_content_normalize( stripslashes( $content ) ) );
 	}
 
@@ -299,6 +301,7 @@ function humanstxt_restore_revision( int $revision ): null {
  * @global $wp_filesystem
  */
 function humanstxt_import_file(): void {
+	/** @var WP_Filesystem_Direct $wp_filesystem */
 	global $wp_filesystem;
 
 	$import = true;
@@ -321,8 +324,9 @@ function humanstxt_import_file(): void {
 		if ( ! is_readable( $file ) ) {
 			$import = false;
 		}
-
-		if ( ( $contents = $wp_filesystem->get_contents( $file ) ) === false ) {
+		/** @var string $contents */
+		$contents = $wp_filesystem->get_contents( $file );
+		if ( '' === $contents ) {
 			$import = false;
 		}
 
@@ -372,7 +376,7 @@ function humanstxt_plugin_notice( string $plugin_file, array $plugin_data, strin
 /**
  * Returns an array with plugin rating and total votes from WordPress.org.
  *
- * @return array<string>|false Plugin rating and total votes.
+ * @return array<string,int>|false Plugin rating and total votes.
  */
 function humanstxt_rating() {
 	$api = get_transient( 'humanstxt_plugin_information' );
@@ -388,10 +392,12 @@ function humanstxt_rating() {
 	}
 
 	if ( is_object( $api ) && ! is_wp_error( $api ) && property_exists( $api, 'rating' ) && property_exists( $api, 'num_ratings' ) ) {
-		return array(
-			'rating' => $api->rating,
-			'votes'  => $api->num_ratings,
-		);
+		if ( is_numeric( $api->rating ) && is_numeric( $api->num_ratings ) ) {
+			return array(
+				'rating' => (int) $api->rating,
+				'votes'  => (int) $api->num_ratings,
+			);
+		}
 	}
 
 	return false;
@@ -405,7 +411,11 @@ function humanstxt_rating() {
  */
 function humanstxt_ajax_preview(): void {
 	if ( isset( $_GET['content'] ) && $_GET['content'] !== '' ) {
-		print '<pre>' . esc_html( apply_filters( 'humans_txt', $_GET['content'] ) ) . '</pre>';
+		$content = apply_filters( 'humans_txt', $_GET['content'] );
+		$content = filter_var( $content, FILTER_UNSAFE_RAW );
+		$content = false === $content ? '' : $content;
+		$content = esc_html( $content );
+		print sprintf('<pre>%s</pre>', $content);
 	} else {
 		print /* translators: DO NOT TRANSLATE! */ __( 'An error has occurred. Please reload the page and try again.' );
 	}
@@ -492,10 +502,10 @@ function humanstxt_options_page(): void {
 					<p class="text-rateit"><?php printf( __( 'If you like this plugin, why not <a href="%1$s" title="%2$s" rel="external">recommend it to others</a> by rating it?', 'humanstxt' ), 'http://wordpress.org/support/view/plugin-reviews/humanstxt', __( 'Rate this plugin on WordPress.org', 'humanstxt' ) ); ?></p>
 					<div class="star-holder">
 						<?php if ( humanstxt_is_wp( '3.4' ) ) : ?>
-							<div class="star star-rating" style="width: <?php echo esc_attr( $rating['rating'] ); ?>px"></div>
+							<div class="star star-rating" style="width: <?php echo esc_attr( (string) $rating['rating'] ); ?>px"></div>
 						<?php else : ?>
 							<?php $starimg = humanstxt_is_wp( '3.2' ) ? admin_url( 'images/gray-star.png?v=20110615' ) : admin_url( 'images/star.gif' ); ?>
-							<div class="star star-rating" style="width: <?php echo esc_attr( $rating['rating'] ); ?>px"></div>
+							<div class="star star-rating" style="width: <?php echo esc_attr( (string) $rating['rating'] ); ?>px"></div>
 							<div class="star star5"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '5 stars' ); ?>" /></div>
 							<div class="star star4"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '4 stars' ); ?>" /></div>
 							<div class="star star3"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '3 stars' ); ?>" /></div>
@@ -503,7 +513,7 @@ function humanstxt_options_page(): void {
 							<div class="star star1"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '1 star' ); ?>" /></div>
 						<?php endif; ?>
 					</div>
-					<small class="text-votes"><?php printf( /* translators: DO NOT TRANSLATE! */ _n( '(based on %s rating)', '(based on %s ratings)', (int) $rating['votes'] ), number_format_i18n( (float) $rating['votes'] ) ); ?></small>
+					<small class="text-votes"><?php printf( /* translators: DO NOT TRANSLATE! */ _n( '(based on %s rating)', '(based on %s ratings)', $rating['votes'] ), number_format_i18n( (float) $rating['votes'] ) ); ?></small>
 				</div>
 			<?php endif; ?>
 
@@ -542,7 +552,11 @@ function humanstxt_options_page(): void {
 								<?php $disabled = ( $role === 'administrator' ) ? 'disabled="disabled" ' : ''; ?>
 								<label for="humanstxt_role_<?php echo $role; ?>">
 									<input name="humanstxt_roles[<?php echo $role; ?>]" type="checkbox" id="humanstxt_role_<?php echo $role; ?>" value="1" <?php echo $checked; ?><?php echo $disabled; ?>/>
-									<?php echo translate_user_role( $details['name'] ); ?>
+									<?php
+										$name = filter_var( $details['name'], FILTER_UNSAFE_RAW );
+										$name = false === $name ? '' : $name;
+										echo translate_user_role( $name );
+									?>
 								</label>
 								<br />
 							<?php endforeach; ?>
@@ -608,7 +622,10 @@ function humanstxt_options_page(): void {
 							<h5><?php echo $group_names[ $group ]; ?></h5>
 							<ul class="hidden">
 								<?php foreach ( $variables as $variable ) : ?>
-									<?php $preview = ( ! isset( $variable[5] ) || $variable[5] === '' ) && is_callable( $variable[3] ) ? call_user_func( $variable[3] ) : /* translators: Preview: Not available... */ __( 'Not available...', 'humanstxt' ); ?>
+									<?php
+										/** @var string $preview */
+										$preview = ( ! isset( $variable[5] ) || $variable[5] === '' ) && is_callable( $variable[3] ) ? call_user_func( $variable[3] ) : /* translators: Preview: Not available... */ __( 'Not available...', 'humanstxt' );
+									?>
 									<li title="<?php echo esc_attr( sprintf( /* translators: %s: output preview of variable */ __( 'Preview: %s', 'humanstxt' ), $preview ) ); ?>">
 										<code>$<?php echo $variable[2]; ?>$</code>
 										<?php if ( isset( $variable[4] ) && $variable[4] !== '' ) : ?>
@@ -782,7 +799,13 @@ function humanstxt_revisions_page(): void {
 
 	</form>
 
-	<p><?php printf( /* translators: %s: number of stored revisions */ __( 'WordPress is storing the last %s revisions of your <em>humans.txt</em> file.', 'humanstxt' ), (int) apply_filters( 'humanstxt_max_revisions', HUMANSTXT_MAX_REVISIONS ) ); ?></p>
+	<p>
+		<?php
+			$max_revisions = apply_filters( 'humanstxt_max_revisions', HUMANSTXT_MAX_REVISIONS );
+			$max_revisions = filter_var( $max_revisions, FILTER_VALIDATE_INT, FILTER_REQUIRE_SCALAR );
+			printf( /* translators: %s: number of stored revisions */ __( 'WordPress is storing the last %s revisions of your <em>humans.txt</em> file.', 'humanstxt' ), $max_revisions );
+		?>
+	</p>
 
 </div>
 	<?php
