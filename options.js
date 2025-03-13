@@ -184,15 +184,6 @@ jQuery( document ).ready(
 				var rowsDefault    = this.rows;
 				var rowsAdjustment = 0;
 
-				if ($.browser.msie) {
-					if ($.browser.version < 9) {
-						rowsAdjustment = $( '#humanstxt' ).hasClass( 'not-wp32' ) ? 9 : 3;
-					} else {
-						rowsAdjustment = 5;
-					}
-					rowsDefault += rowsAdjustment;
-				}
-
 				var grow = function () {
 					growByRef( this );
 				}
