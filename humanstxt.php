@@ -462,35 +462,51 @@ function humanstxt_content_normalize( string $string ): string {
  *
  * @since 1.1.0
  *
- * @return array<array<int|string>>|false Revisions of the humans.txt file
+ * @return list<array{date: int, user: int, content: string}> Revisions of the humans.txt file
  */
 function humanstxt_revisions(): array|false {
 
-    $revisions = apply_filters( 'humanstxt_max_revisions', 1 );
-    $revisions = filter_var( $revisions, FILTER_VALIDATE_INT );
-    $revisions = false !== $revisions ? $revisions : 1;
+	$revision_amount = apply_filters( 'humanstxt_max_revisions', HUMANSTXT_MAX_REVISIONS );
+	$revision_amount = filter_var( $revision_amount, FILTER_VALIDATE_INT );
+	$revision_amount = false !== $revision_amount ? $revision_amount : HUMANSTXT_MAX_REVISIONS;
 
 	// are revisions disabled?
-	if ( $revisions < 1 ) {
+	if ( $revision_amount < 1 ) {
 		return false;
 	}
 
 	$revisions = get_option( 'humanstxt_revisions' );
 
-	// add or reset option?
-	if ( ! is_array( $revisions ) ) {
-		$revisions = array(
-			array(
-				'date'    => current_time( 'timestamp' ),
-				'user'    => 0,
-				'content' => humanstxt_content(),
-			),
-		);
-		add_option( 'humanstxt_revisions', $revisions, '', false );
-		return $revisions;
+  if  ( is_array($revisions) ) {
+		$result = array();
+		foreach ( $revisions as $key => $revision ) {
+			if ( false !== is_array( $revision ) ) {
+				$date = filter_var( $revision['date'], FILTER_VALIDATE_INT );
+				$date = false !== $date ? $date : current_time( 'timestamp' );
+				$user = filter_var( $revision['user'], FILTER_VALIDATE_INT );
+				$user = false !== $user ? $user : 0;
+				$content = filter_var( $revision['content'], FILTER_DEFAULT );
+				$content = false !== $content ? $content : '';
+				$result[] = array(
+					'date' => $date,
+					'user' => $user,
+					'content' => $content,	
+				);
+			}
+		}
+		return $result; 
 	}
 
-	return false;
+	$revisions = array(
+		array(
+			'date'    => current_time( 'timestamp' ),
+			'user'    => 0,
+			'content' => humanstxt_content(),
+		),
+	);
+	add_option( 'humanstxt_revisions', $revisions, '', false );
+
+	return $revisions;
 }
 
 /**
@@ -505,6 +521,7 @@ function humanstxt_revisions(): array|false {
 function humanstxt_add_revision( string $content ): void {
 	$current_user = wp_get_current_user();
 	$revisions    = humanstxt_revisions();
+
 	if ( ! is_array( $revisions ) ) {
 		$revisions = array();
 	}
@@ -515,16 +532,14 @@ function humanstxt_add_revision( string $content ): void {
 		'content' => $content,
 	);
 
-	// limit amount of revisions (with PHP4 compatibility)
-	// $keys       = array_slice( array_keys( $revisions ), -abs( (int) apply_filters( 'humanstxt_max_revisions', HUMANSTXT_MAX_REVISIONS ) ), count( $revisions ) );
-	// $_revisions = array();
-	// foreach ( $keys as $key ) {
-	// 	$_revisions[ $key ] = $revisions[ $key ];
-	// }
+	// limit amount of revisions
+	$keys       = array_slice( array_keys( $revisions ), -abs( HUMANSTXT_MAX_REVISIONS ), count( $revisions ) );
+	$_revisions = array();
+	foreach ( $keys as $key ) {
+		$_revisions[ $key ] = $revisions[ $key ];
+	}
 
-	// update_option( 'humanstxt_revisions', $_revisions );
-
-    update_option( 'humanstxt_revisions', $revisions );
+	update_option( 'humanstxt_revisions', $_revisions );
 }
 
 /**
