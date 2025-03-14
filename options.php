@@ -657,26 +657,18 @@ function humanstxt_options_page(): void {
  */
 function humanstxt_revisions_page(): void {
 	?>
-<div id="humanstxt-revisions" class="wrap
-	<?php
-	if ( ! humanstxt_is_wp( '3.2' ) ) :
-		?>
-	not-wp32<?php endif; ?>">
-
-	<?php if ( ! humanstxt_is_wp( '3.7' ) ) : ?>
-		<?php screen_icon(); ?>
-	<?php endif; ?>
+<div id="humanstxt-revisions" class="wrap">
 
 	<h1><?php _e( 'Humans TXT', 'humanstxt' ); ?>: <?php _e( 'Revisions' ); ?></h1>
 
 	<?php
 		$show_revision = 0;
 		$live_revision = 0;
-	$revisions         = is_array( humanstxt_revisions() ) ? humanstxt_revisions() : array();
-	krsort( $revisions );
-	if ( count( $revisions ) !== 0 ) :
-		$live_revision = max( array_keys( $revisions ) );
-		$show_revision = isset( $_GET['revision'] ) && isset( $revisions[ $_GET['revision'] ] ) ? filter_input( INPUT_GET, 'revision', FILTER_VALIDATE_INT ) : false;
+		$revisions     = is_array( humanstxt_revisions() ) ? humanstxt_revisions() : array();
+		krsort( $revisions );
+		if ( count( $revisions ) !== 0 ) :
+			$live_revision = max( array_keys( $revisions ) );
+			$show_revision = isset( $_GET['revision'] ) && isset( $revisions[ $_GET['revision'] ] ) ? filter_input( INPUT_GET, 'revision', FILTER_VALIDATE_INT ) : false;
 		endif;
 	?>
 	<?php if ( $show_revision !== false ) : ?>
@@ -698,11 +690,12 @@ function humanstxt_revisions_page(): void {
 		?>
 									" class="button-primary"><?php _e( 'Restore Revision', 'humanstxt' ); ?></a></p>
 
-	<?php elseif ( isset( $_GET['action'], $_GET['left'], $_GET['right'] ) && $_GET['action'] === 'compare' && isset( $revisions[ $_GET['left'] ], $revisions[ $_GET['right'] ] ) ) : ?>
-
+	<?php elseif ( isset( $_GET['action'], $_GET['left'], $_GET['right'] )
+								&& $_GET['action'] === 'compare'
+								&& isset( $revisions[ $_GET['left'] ], $revisions[ $_GET['right'] ] ) ) : ?>
 		<?php if ( $_GET['left'] === $_GET['right'] ) : ?>
 			<div class="error"><p><?php _e( 'You cannot compare a revision to itself.', 'humanstxt' ); ?></p></div>
-		<?php elseif ( wp_text_diff( strval( $revisions[ $_GET['left'] ]['content'] ), strval( $revisions[ $_GET['right'] ]['content'] ) ) !== '' ) : ?>
+		<?php elseif ( wp_text_diff( strval( $revisions[ $_GET['left'] ]['content'] ), strval( $revisions[ $_GET['right'] ]['content'] ) ) === '' ) : ?>
 			<div class="error"><p><?php _e( 'These revisions are identical.' ); ?></p></div>
 		<?php else : ?>
 
