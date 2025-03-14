@@ -277,11 +277,11 @@ function humanstxt_update_options(): void {
  *
  * @param int $revision Revisons number (key)
  */
-function humanstxt_restore_revision( int $revision ): null {
+function humanstxt_restore_revision( int $revision ): void {
 	$revisions = humanstxt_revisions();
 
 	if ( ! isset( $revisions[ $revision ] ) ) {
-		return null;
+		return;
 	}
 
 	humanstxt_update_content( strval( $revisions[ $revision ]['content'] ) );
@@ -618,7 +618,7 @@ function humanstxt_options_page(): void {
 		<div class="clear"></div>
 
 		<h3><?php _e( 'Shortcode Usage', 'humanstxt' ); ?></h3>
-		<p><?php printf( __( 'You can use the <code>[humanstxt]</code> shortcode to display the <em>humans.txt</em> file on a page or in a post. By default, all links, email addresses and Twitter account names will be converted into clickable links and email addresses will be encoded to block spam bots. <a href="%s" rel="external">Of course you can customize it...</a>', 'humanstxt' ), 'http://wordpress.org/extend/plugins/humanstxt/other_notes/#Shortcode-Usage' ); ?></p>
+		<p><?php printf( __( 'You can use the <code>[humanstxt]</code> shortcode to display the <em>humans.txt</em> file on a page or in a post. By default, all links, email addresses and x.com account names will be converted into clickable links and email addresses will be encoded to block spam bots. <a href="%s" rel="external">Of course you can customize it...</a>', 'humanstxt' ), 'http://wordpress.org/extend/plugins/humanstxt/other_notes/#Shortcode-Usage' ); ?></p>
 
 	</form>
 </div>

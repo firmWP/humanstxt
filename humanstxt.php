@@ -258,10 +258,10 @@ function _humanstxt_shortcode( array $attributes ): string {
 				'plain'     => false, // clean output, all options are ignored except $wrap and $id
 				'wrap'      => true, // wrap content of humans.txt in <p> element
 				'filter'    => true, // convert/format common entities and encode plain text email addresses
-				'clickable' => true, // make URLs, email addresses and Twitter accounts clickable
+				'clickable' => true, // make URLs, email addresses and X accounts clickable
 				'urls'      => true, // force/prevent clickable URLs, regardless $clickable
 				'emails'    => true, // force/prevent clickable email addresses, regardless $clickable
-				'twitter'   => true, // force/prevent clickable Twitter accounts, regardless $clickable
+				'x'					=> true, // force/prevent clickable X accounts, regardless $clickable
 			),
 			$attributes
 		)
@@ -288,8 +288,8 @@ function _humanstxt_shortcode( array $attributes ): string {
 		if ( ! (bool) $pre ) {
 			$headline_replacement = '<strong class="humanstxt-headline">$1</strong>';
 			$headline_replacement = apply_filters( 'humanstxt_shortcode_headline_replacement', $headline_replacement );
-            $headline_replacement = filter_var( $headline_replacement, FILTER_UNSAFE_RAW );
-            $headline_replacement = false !== $headline_replacement ? $headline_replacement : '<strong class="humanstxt-headline">$1</strong>';
+			$headline_replacement = filter_var( $headline_replacement, FILTER_UNSAFE_RAW );
+			$headline_replacement = false !== $headline_replacement ? $headline_replacement : '<strong class="humanstxt-headline">$1</strong>';
 			$content              = preg_replace( '~/\*(.+?)\*/~', $headline_replacement, $content ) ?? $content;
 		}
 
@@ -307,13 +307,13 @@ function _humanstxt_shortcode( array $attributes ): string {
 			$content = preg_replace_callback( '#([\s>])([.0-9a-z_+-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,})#i', '_make_email_clickable_cb', $content ) ?? $content;
 		}
 
-		// make Twitter account names clickable
-		if ( ( (bool) $clickable && (bool) $twitter ) || ( ! (bool) $clickable && (bool) $twitter && isset( $attributes['twitter'] ) ) ) {
-			$twitter_replacement = '$1<a href="http://twitter.com/$2" rel="external">@$2</a>';
-			$twitter_replacement = apply_filters( 'humanstxt_shortcode_twitter_replacement', $twitter_replacement );
-            $twitter_replacement = filter_var( $twitter_replacement, FILTER_UNSAFE_RAW );
-            $twitter_replacement = false !== $twitter_replacement ? $twitter_replacement : '$1<a href="http://twitter.com/$2" rel="external">@$2</a>';
-			$content             = preg_replace( '/(^|[^a-z0-9_])[@＠]([a-z0-9_]{1,20})([@＠\xC0-\xD6\xD8-\xF6\xF8-\xFF]?)/iu', $twitter_replacement, $content ) ?? $content;
+		// make x.com account names clickable
+		if ( ( (bool) $clickable && (bool) $x ) || ( ! (bool) $clickable && (bool) $x && isset( $attributes['x'] ) ) ) {
+			$x_com_replacement = '$1<a href="http://x.com/$2" rel="external">@$2</a>';
+			$x_com_replacement = apply_filters( 'humanstxt_shortcode_x_replacement', $x_com_replacement );
+			$x_com_replacement = filter_var( $x_com_replacement, FILTER_UNSAFE_RAW );
+			$x_com_replacement = false !== $x_com_replacement ? $x_com_replacement : '$1<a href="http://x.com/$2" rel="external">@$2</a>';
+			$content           = preg_replace( '/(^|[^a-z0-9_])[@＠]([a-z0-9_]{1,20})([@＠\xC0-\xD6\xD8-\xF6\xF8-\xFF]?)/iu', $x_com_replacement, $content ) ?? $content;
 		}
 
 		if ( (bool) $filter ) {
@@ -665,13 +665,13 @@ function humanstxt_default_content(): string {
 /* TEAM */
 	<your title>: <your name>
 	Site: <website url>
-	Twitter: <@username>
+	X: <@username>
 	Location: <city, country>
 
 		[...]
 
 /* THANKS */
-	<name>: <link, email, @twittername, ...>
+	<name>: <link, email, @x_handle, ...>
 
 		[...]
 

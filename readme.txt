@@ -304,11 +304,11 @@ This version contains several fixes and improvements.
 
 == Shortcode Usage ==
 
-The default shortcode `[humanstxt]` will display the contents of the virtual humans.txt file. URLs, email addresses and Twitter account names are converted into clickable links. Plain email addresses are encoded for spam protection. The output will be wrapped with a `<p>` tag and can be styled via the `humanstxt` CSS class.
+The default shortcode `[humanstxt]` will display the contents of the virtual humans.txt file. URLs, email addresses and X.com account names are converted into clickable links. Plain email addresses are encoded for spam protection. The output will be wrapped with a `<p>` tag and can be styled via the `humanstxt` CSS class.
 
 You can turn off the "clickable links" functionality: `[humanstxt clickable="0"]`
 
-You can also toggle the clickable links individually: `[humanstxt urls="1" emails="0" twitter="1"]`
+You can also toggle the clickable links individually: `[humanstxt urls="1" emails="0" x="1"]`
 
 To display the humans.txt as preformatted text, use the `pre` attribute: `<pre>[humanstxt pre="1"]</pre>`
 
@@ -370,8 +370,8 @@ Applied to the un-wrapped shortcode output.
 **humanstxt_shortcode_headline_replacement**
 Applied to replacement string for matched standard headlines: `/* Title */`. See `humanstxt_shortcode()` for details.
 
-**humanstxt_shortcode_twitter_replacement**
-Applied to replacement string for matched twitter account names. See `humanstxt_shortcode()` for details.
+**humanstxt_shortcode_x_replacement**
+Applied to replacement string for matched x.com account names. See `humanstxt_shortcode()` for details.
 
 **humanstxt_separator**
 Applied to the global text separator. Default is a comma followed by a space.
