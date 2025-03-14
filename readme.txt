@@ -72,6 +72,10 @@ Theoretically in the root of your site, **however** this plugin doesn't create a
 
 == Changelog ==
 
+= 1.4.0 =
+
+* Removed HUMANSTXT_METABOX and the rating box.
+
 = 1.3.1 =
 
 * Fix deprecated warning
@@ -329,13 +333,6 @@ Determines if the current request is for the virtual humans.txt file.
 == Pluggable Functions ==
 
 All callback functions of the default variables can be overridden. The callback functions are located in [humanstxt/callbacks.php](http://plugins.trac.wordpress.org/browser/humanstxt/trunk/callbacks.php).
-
-
-== Plugin Constants ==
-
-**HUMANSTXT_METABOX**
-Define as `false` to disable the "rate this plugin" box on the options page.
-
 
 == Plugin Actions and Filters ==
 

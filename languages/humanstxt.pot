@@ -396,12 +396,6 @@ msgid ""
 msgstr ""
 
 #: options.php:462
-msgid ""
-"If you like this plugin, why not <a href=\"%s\" title=\"%s\" rel=\"external"
-"\">recommend it to others</a> by rating it?"
-msgstr ""
-
-#: options.php:462
 msgid "Rate this plugin on WordPress.org"
 msgstr ""
 

@@ -492,31 +492,6 @@ function humanstxt_options_page(): void {
 
 		<?php if ( current_user_can( 'administrator' ) ) : ?>
 
-			<?php
-			if ( ! defined( 'HUMANSTXT_METABOX' ) ) {
-				define( 'HUMANSTXT_METABOX', true );
-			}
-			?>
-			<?php if ( HUMANSTXT_METABOX && ( $rating = humanstxt_rating() ) !== false ) : ?>
-				<div id="humanstxt-metabox" class="postbox humanstxt-box">
-					<p class="text-rateit"><?php printf( __( 'If you like this plugin, why not <a href="%1$s" title="%2$s" rel="external">recommend it to others</a> by rating it?', 'humanstxt' ), 'http://wordpress.org/support/view/plugin-reviews/humanstxt', __( 'Rate this plugin on WordPress.org', 'humanstxt' ) ); ?></p>
-					<div class="star-holder">
-						<?php if ( humanstxt_is_wp( '3.4' ) ) : ?>
-							<div class="star star-rating" style="width: <?php echo esc_attr( (string) $rating['rating'] ); ?>px"></div>
-						<?php else : ?>
-							<?php $starimg = humanstxt_is_wp( '3.2' ) ? admin_url( 'images/gray-star.png?v=20110615' ) : admin_url( 'images/star.gif' ); ?>
-							<div class="star star-rating" style="width: <?php echo esc_attr( (string) $rating['rating'] ); ?>px"></div>
-							<div class="star star5"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '5 stars' ); ?>" /></div>
-							<div class="star star4"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '4 stars' ); ?>" /></div>
-							<div class="star star3"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '3 stars' ); ?>" /></div>
-							<div class="star star2"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '2 stars' ); ?>" /></div>
-							<div class="star star1"><img src="<?php echo $starimg; ?>" alt="<?php /* translators: DO NOT TRANSLATE! */ _e( '1 star' ); ?>" /></div>
-						<?php endif; ?>
-					</div>
-					<small class="text-votes"><?php printf( /* translators: DO NOT TRANSLATE! */ _n( '(based on %s rating)', '(based on %s ratings)', $rating['votes'] ), number_format_i18n( (float) $rating['votes'] ) ); ?></small>
-				</div>
-			<?php endif; ?>
-
 			<h3><?php /* translators: DO NOT TRANSLATE! */ _e( 'Settings' ); ?></h3>
 			<table class="form-table">
 				<tr valign="top">
