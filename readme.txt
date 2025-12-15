@@ -288,7 +288,7 @@ This version contains several fixes and improvements.
 * `$wp-tagline$` - Tagline (description) of site/blog
 * `$wp-posts$` - Number of published posts
 * `$wp-pages$` - Number of published pages
-* `$wp-lastupdate$` - Date of last modified post or page
+* `$wp-last-update$` - Date of last modified post or page
 * `$wp-authors$` - Active authors and their contact details
 * `$wp-language$` - WordPress language(s)
 * `$wp-plugins$` - Activated WordPress plugins
@@ -371,11 +371,11 @@ Applied to the list of active WordPress plugins: `$wp-plugins$`.
 **humanstxt_languages**
 Applied to current WordPress language(s): `$wp-language$`.
 
-**humanstxt_lastupdate**
-Applied to returned date of the `$wp-lastupdate$` variable.
+**humanstxt_last_update**
+Applied to returned date of the `$wp-last-update$` variable.
 
-**humanstxt_lastupdate_format**
-Applied to the used date-format of the `$wp-lastupdate$` variable. Default is `Y/m/d`. Read more about [date and time formatting](http://codex.wordpress.org/Formatting_Date_and_Time).
+**humanstxt_last_update_format**
+Applied to the used date-format of the `$wp-last-update$` variable. Default is `Y/m/d`. Read more about [date and time formatting](http://codex.wordpress.org/Formatting_Date_and_Time).
 
 **humanstxt_authors**
 Applied to the list of active authors: `$wp-authors$`.

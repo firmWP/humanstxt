@@ -223,22 +223,22 @@ if (! function_exists('humanstxt_callback_wplanguage')) :
 	}
 endif;
 
-if (! function_exists('humanstxt_callback_lastupdate')) :
+if (! function_exists('humanstxt_callback_last_update')) :
 	/**
 	 * Returns YYYY/MM/DD timestamp of the latest modified post/page which is published.
-	 * The date format can be modified with the 'humanstxt_lastupdate_format' filter.
-	 * The final funtion result can be modified with the 'humanstxt_lastupdate' filter.
+	 * The date format can be modified with the 'humanstxt_last_update_format' filter.
+	 * The final function result can be modified with the 'humanstxt_last_update' filter.
 	 *
 	 * @global $wpdb
 	 * @return ?string $last_edit Timestamp of last modified post/page.
 	 */
-	function humanstxt_callback_lastupdate(): ?string
+	function humanstxt_callback_last_update(): ?string
 	{
 		$last_edit = get_lastpostdate('blog');
-		$format = filter_var(apply_filters('humanstxt_lastupdate_format', 'Y/m/d'), FILTER_UNSAFE_RAW);
+		$format = filter_var(apply_filters('humanstxt_last_update_format', 'Y/m/d'), FILTER_UNSAFE_RAW);
 		$format = false !== $format ? $format : '';
 		$last_edit = wp_date($format, intval(strtotime($last_edit)));
-		$last_edit = apply_filters('humanstxt_lastupdate', $last_edit);
+		$last_edit = apply_filters('humanstxt_last_update', $last_edit);
 		return filter_var($last_edit, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE);
 	}
 endif;

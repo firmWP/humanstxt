@@ -402,7 +402,7 @@ function humanstxt_replace_variables(string $string): string
 		$callback = $variable[3];
 
 		// 1 = english; 2 = translated varname
-		$varnames = array('$' . $tag . '$', '$' . $localized_tag . '$');
+		$var_names = array('$' . $tag . '$', '$' . $localized_tag . '$');
 
 		// does one of the variables occur in the string?
 		if (stripos($string, $tag) !== false || stripos($string, $localized_tag) !== false) {
@@ -413,7 +413,7 @@ function humanstxt_replace_variables(string $string): string
 			$result = filter_var($result, FILTER_UNSAFE_RAW);
 			$result = false !== $result ? $result : '';
 			// replace all occurrences of the variables with callback result
-			$string = str_ireplace($varnames, $result, $string);
+			$string = str_ireplace($var_names, $result, $string);
 		}
 	}
 
@@ -441,7 +441,7 @@ function humanstxt_variables(): array
 	$variables[] = array('wordpress', 'wp-posts', /* translators: variable name for the number of published posts */ __('wp-posts', 'humanstxt'), 'humanstxt_callback_wpposts', __('Number of published posts', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-pages', /* translators: variable name for the number of published pages */ __('wp-pages', 'humanstxt'), 'humanstxt_callback_wppages', __('Number of published pages', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-authors', /* translators: variable name for the author list */ __('wp-authors', 'humanstxt'), 'humanstxt_callback_wpauthors', __('Active authors and their contact details', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-lastupdate', /* translators: variable name for the "last modified" timestamp */ __('wp-lastupdate', 'humanstxt'), 'humanstxt_callback_lastupdate', __('Date of last modified post/page', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-last-update', /* translators: variable name for the "last modified" timestamp */ __('wp-last-update', 'humanstxt'), 'humanstxt_callback_last_update', __('Date of last modified post/page', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-language', /* translators: variable name for WordPress languages(s) */ __('wp-language', 'humanstxt'), 'humanstxt_callback_wplanguage', __('WordPress language(s)', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-timezone', /* translators: variable name for WordPress timezone */ __('wp-timezone', 'humanstxt'), 'humanstxt_callback_wptimezone', __('WordPress timezone', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-version', /* translators: variable name for the installed WordPress version */ __('wp-version', 'humanstxt'), 'humanstxt_callback_wpversion', __('Installed WordPress version', 'humanstxt'));
@@ -462,9 +462,6 @@ function humanstxt_variables(): array
 	$variables[] = array('addons', 'wp-theme-author', /* translators: variable name for the author name of the active WordPress theme */ __('wp-theme-author', 'humanstxt'), 'humanstxt_callback_wptheme_author', __('Author name of the active theme', 'humanstxt'));
 	$variables[] = array('addons', 'wp-theme-author-link', /* translators: variable name for the author link of the active WordPress theme */ __('wp-theme-author-link', 'humanstxt'), 'humanstxt_callback_wptheme_author_link', __('Author link of the active theme', 'humanstxt'));
 
-	// $variables = apply_filters('humanstxt_variables', $variables);
-	// $variables = filter_var_array( $variables, FILTER_REQUIRE_ARRAY );
-	// $variables = is_array( $variables ) ? $variables : array(array());
 	return $variables;
 }
 
@@ -524,7 +521,7 @@ function humanstxt_default_content(): string
 		[...]
 
 /* SITE */
-	Last update: $wp-lastupdate$
+	Last update: $wp-last-update$
 	Standards: <HTML5, CSS3, ...>
 	CMS: WordPress $wp-version$ (running PHP $php-version$)
 	Language: <English, Klingon, ...>
