@@ -566,22 +566,21 @@ function humanstxt_replace_variables(string $string): string
 
 	foreach ($variables as $variable) {
 
+		$group = $variable[0];
+		$tag = $variable[1];
+		$localized_tag = $variable[2];
+		$callback = $variable[3];
+
 		// 1 = english; 2 = translated varname
-		$varnames = array('$' . $variable[1] . '$', '$' . $variable[2] . '$');
+		$varnames = array('$' . $tag . '$', '$' . $localized_tag . '$');
 
 		// does one of the variables occur in the string?
-		if (stripos($string, $varnames[0]) !== false || stripos($string, $varnames[1]) !== false) {
-			if (! is_callable($variable[3])) {
-				continue;
-			}
-			$result = @call_user_func($variable[3]);
+		if (stripos($string, $tag) !== false || stripos($string, $localized_tag) !== false) {
+			$result = call_user_func($callback);
 			$result = filter_var($result, FILTER_UNSAFE_RAW);
 			$result = false !== $result ? $result : '';
-			// do we have a valid callback result?
-			if (function_exists($variable[3]) && (bool) $result  !== false) {
-				// replace all occurrences of the variables with callback result
-				$string = str_ireplace($varnames, $result, $string);
-			}
+			// replace all occurrences of the variables with callback result
+			$string = str_ireplace($varnames, $result, $string);
 		}
 	}
 
@@ -646,7 +645,7 @@ function humanstxt_valid_variables(): array
 	$variables = humanstxt_variables();
 
 	foreach ($variables as $key => $variable) {
-		// delete if variable hasn't enought params
+		// delete if variable hasn't enough params
 		if (count($variable) < 5) {
 			unset($variables[$key]);
 			continue;
