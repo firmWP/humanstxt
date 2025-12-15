@@ -122,7 +122,7 @@ function get_humanstxt_authortag(): string
 {
 	$htmlTag = sprintf('<link rel="author" type="text/plain" href="%s" />', home_url('humans.txt'));
 	$htmlTag .= PHP_EOL;
-	$authortag = filter_var($authortag, FILTER_UNSAFE_RAW);
+	$authortag = filter_var($htmlTag, FILTER_UNSAFE_RAW);
 	$authortag = false !== $authortag ? $authortag : '';
 	return $authortag;
 }
