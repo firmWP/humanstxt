@@ -167,7 +167,7 @@ function humanstxt_admin_menu(): void
 function humanstxt_actionlinks(array $actions): array
 {
 	return array_merge(
-		array('settings' => sprintf('<a href="%s">%s</a>', HUMANSTXT_OPTIONS_URL, /* translators: DO NOT TRANSLATE! */ __('Settings'))),
+		array('settings' => sprintf('<a href="%s">%s</a>', HUMANSTXT_OPTIONS_URL, __('Settings'))),
 		$actions
 	);
 }
@@ -196,7 +196,7 @@ function humanstxt_contextual_help(): void
 
 	$variables = __('Variables can be used to show dynamic content in your humans.txt file. You can show your visitors for example the amount of published posts, a list of activated plugins, the name of the current theme or the installed WordPress version. Hover your cursor over a variable to see a preview of it.', 'humanstxt');
 
-	$more = '<p><strong>' . /* translators: DO NOT TRANSLATE! */ __('For more information:') . '</strong></p>
+	$more = '<p><strong>' . __('For more information:') . '</strong></p>
 		<p><a href="http://humanstxt.org/" rel="external">' . __('Humans TXT Website', 'humanstxt') . '</a></p>
 		<p><a href="http://wordpress.org/extend/plugins/humanstxt/" rel="external">' . __('Plugin Homepage', 'humanstxt') . '</a></p>
 		<p><a href="http://wordpress.org/tags/humanstxt" rel="external">' . __('Plugin Support Forum', 'humanstxt') . '</a></p>
@@ -317,7 +317,7 @@ function humanstxt_import_file(): void
 	$file   = ABSPATH . 'humans.txt';
 
 	if (! current_user_can('administrator')) {
-		wp_die( /* translators: DO NOT TRANSLATE!! */__('Cheatin&#8217; uh?'));
+		wp_die(__('Access denied.', 'humanstxt'));
 	}
 
 	// don't bother requesting filesystem credentials
@@ -429,7 +429,7 @@ function humanstxt_ajax_preview(): void
 		$content = esc_html($content);
 		print sprintf('<pre>%s</pre>', $content);
 	} else {
-		print /* translators: DO NOT TRANSLATE! */ __('An error has occurred. Please reload the page and try again.');
+		print __('An error has occurred. Please reload the page and try again.');
 	}
 
 	exit;
@@ -474,7 +474,7 @@ function humanstxt_options_page(): void
 
 		<?php if (isset($_GET['settings-updated'])) : ?>
 			<div class="updated">
-				<p><strong><?php /* translators: DO NOT TRANSLATE! */ _e('Settings saved.'); ?></strong></p>
+				<p><strong><?php _e('Settings saved.'); ?></strong></p>
 			</div>
 		<?php elseif (isset($_GET['revision-restored'])) : ?>
 			<div class="updated">
@@ -518,7 +518,7 @@ function humanstxt_options_page(): void
 
 			<?php if (current_user_can('administrator')) : ?>
 
-				<h3><?php /* translators: DO NOT TRANSLATE! */ _e('Settings'); ?></h3>
+				<h3><?php _e('Settings'); ?></h3>
 				<table class="form-table">
 					<tr valign="top">
 						<th scope="row"><?php _e('Humans TXT File', 'humanstxt'); ?></th>
@@ -567,7 +567,7 @@ function humanstxt_options_page(): void
 				</table>
 
 				<p class="submit clear">
-					<input type="submit" name="submit" class="button button-primary" value="<?php /* translators: DO NOT TRANSLATE! */ esc_attr_e('Save Changes'); ?>" />
+					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e('Save Changes'); ?>" />
 					<?php if (humanstxt_option('enabled') !== null) : ?>
 						<a href="<?php echo home_url('humans.txt'); ?>" rel="external" class="button"><?php _e('View Humans TXT', 'humanstxt'); ?></a>
 					<?php endif; ?>
@@ -590,8 +590,8 @@ function humanstxt_options_page(): void
 					</tr>
 				</table>
 				<p class="submit">
-					<input type="submit" name="submit" class="button button-primary" value="<?php /* translators: DO NOT TRANSLATE! */ esc_attr_e('Save'); ?>" />
-					<a href="<?php echo esc_url(admin_url('admin-ajax.php?action=humanstxt-preview')); ?>" class="button button-preview hide-if-no-js" title="<?php /* translators: DO NOT TRANSLATE! */ _e('Preview'); ?>"><?php /* translators: DO NOT TRANSLATE! */ _e('Preview'); ?></a>
+					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e('Save'); ?>" />
+					<a href="<?php echo esc_url(admin_url('admin-ajax.php?action=humanstxt-preview')); ?>" class="button button-preview hide-if-no-js" title="<?php _e('Preview'); ?>"><?php _e('Preview'); ?></a>
 					<?php $revisions = humanstxt_revisions(); ?>
 					<?php if (is_array($revisions) && count($revisions) > 1) : ?>
 						<a href="<?php echo esc_url(HUMANSTXT_REVISIONS_URL); ?>" class="button"><?php _e('View Revisions', 'humanstxt'); ?></a>
@@ -601,7 +601,7 @@ function humanstxt_options_page(): void
 
 			<?php
 			$group_names     = array(
-				'wordpress' => /* translators: DO NOT TRANSLATE! */ __('WordPress'),
+				'wordpress' => __('WordPress'),
 				'server'    => __('Server', 'humanstxt'),
 				'addons'    => __('Themes & Plugins', 'humanstxt'),
 				'misc'      => __('Miscellaneous', 'humanstxt'),
@@ -688,7 +688,7 @@ function humanstxt_revisions_page(): void
 			<h3><?php
 					printf( /* translators: %s: revision date */
 						__('Revision created on %s', 'humanstxt'),
-						date_i18n( /* translators: DO NOT TRANSLATE! */
+						date_i18n(
 							_x('j F, Y @ G:i:s', 'revision date format'),
 							intval($revisions[$show_revision]['date'])
 						)
@@ -727,8 +727,8 @@ function humanstxt_revisions_page(): void
 				<table class="form-table ie-fixed">
 					<tr>
 						<th class="th-full">
-							<span class="alignleft"><?php printf(__('Older: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$left]['date']))); ?></span>
-							<span class="alignright"><?php printf(__('Newer: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$right]['date']))); ?></span>
+							<span class="alignleft"><?php printf(__('Older: %s'), date_i18n(_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$left]['date']))); ?></span>
+							<span class="alignright"><?php printf(__('Newer: %s'), date_i18n(_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$right]['date']))); ?></span>
 						</th>
 					</tr>
 					<tr>
@@ -744,13 +744,13 @@ function humanstxt_revisions_page(): void
 
 		<?php endif; ?>
 
-		<h3><?php /* translators: DO NOT TRANSLATE! */ _e('Revisions'); ?></h3>
+		<h3><?php _e('Revisions'); ?></h3>
 
 		<form action="<?php echo admin_url('options-general.php'); ?>" method="get">
 
 			<div class="tablenav">
 				<div class="alignleft">
-					<input type="submit" class="button-secondary" value="<?php /* translators: DO NOT TRANSLATE! */ esc_attr_e('Compare Revisions'); ?>" />
+					<input type="submit" class="button-secondary" value="<?php esc_attr_e('Compare Revisions'); ?>" />
 					<input type="hidden" name="page" value="humanstxt" />
 					<input type="hidden" name="subpage" value="revisions" />
 					<input type="hidden" name="action" value="compare" />
@@ -767,11 +767,11 @@ function humanstxt_revisions_page(): void
 				<col style="width: 33%" />
 				<thead>
 					<tr>
-						<th scope="col"><?php /* translators: DO NOT TRANSLATE! */ _ex('Old', 'revisions column name'); ?></th>
-						<th scope="col"><?php /* translators: DO NOT TRANSLATE! */ _ex('New', 'revisions column name'); ?></th>
-						<th scope="col"><?php /* translators: DO NOT TRANSLATE! */ _ex('Date Created', 'revisions column name'); ?></th>
-						<th scope="col"><?php /* translators: DO NOT TRANSLATE! */ _e('Author'); ?></th>
-						<th scope="col" class="action-links"><?php /* translators: DO NOT TRANSLATE! */ _e('Actions'); ?></th>
+						<th scope="col"><?php _ex('Old', 'revisions column name'); ?></th>
+						<th scope="col"><?php _ex('New', 'revisions column name'); ?></th>
+						<th scope="col"><?php _ex('Date Created', 'revisions column name'); ?></th>
+						<th scope="col"><?php _e('Author'); ?></th>
+						<th scope="col" class="action-links"><?php _e('Actions'); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -785,7 +785,7 @@ function humanstxt_revisions_page(): void
 							<th scope="row"><input type="radio" name="right" value="<?php echo $key; ?>" <?php checked($key === $right); ?> /></th>
 							<td>
 								<?php $date = '<a href="' . esc_url(add_query_arg(array('revision' => $key), HUMANSTXT_REVISIONS_URL)) . '">' . date_i18n(_x('j F, Y @ G:i', 'revision date format'), intval($revision['date'])) . '</a>'; ?>
-								<?php printf($key === $live_revision ? /* translators: DO NOT TRANSLATE! */ __('%1$s [Current Revision]') : '%s', $date); ?>
+								<?php printf($key === $live_revision ? __('%1$s [Current Revision]') : '%s', $date); ?>
 							</td>
 							<td>
 								<?php if ($revision['user'] > 0) : ?>
@@ -809,7 +809,7 @@ function humanstxt_revisions_page(): void
 										)
 									);
 								?>
-								"><?php /* translators: DO NOT TRANSLATE! */ _e('Restore'); ?></a>
+								"><?php _e('Restore'); ?></a>
 								<?php endif; ?>
 							</td>
 							</tr>
