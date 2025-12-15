@@ -283,9 +283,9 @@ if (! function_exists('humanstxt_callback_wpauthors')) :
 	 *
 	 * @global $wpdb
 	 *
-	 * @return ?string A list of active authors or empty string.
+	 * @return string A list of active authors or empty string.
 	 */
-	function humanstxt_callback_wpauthors(): ?string
+	function humanstxt_callback_wpauthors(): string
 	{
 		$authors    = '';
 		$author_ids = array();
@@ -331,6 +331,11 @@ if (! function_exists('humanstxt_callback_wpplugins')) :
 		if (is_array($active_plugins) && count($active_plugins) !== 0) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			foreach ($active_plugins as $key => $plugin_name) {
+				if (is_scalar($plugin_name)) {
+					$plugin_name = strval($plugin_name);
+				} else {
+					continue;
+				}
 				$plugin_data            = get_plugin_data(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $plugin_name, false);
 				$active_plugins[$key] = $plugin_data['Name'];
 			}

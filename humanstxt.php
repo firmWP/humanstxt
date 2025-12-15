@@ -123,7 +123,6 @@ function get_humanstxt_authortag(): string
 	$htmlTag = sprintf('<link rel="author" type="text/plain" href="%s" />', home_url('humans.txt'));
 	$htmlTag .= PHP_EOL;
 	$authortag = filter_var($htmlTag, FILTER_UNSAFE_RAW);
-	$authortag = false !== $authortag ? $authortag : '';
 	return $authortag;
 }
 
@@ -566,7 +565,6 @@ function humanstxt_replace_variables(string $string): string
 
 	foreach ($variables as $variable) {
 
-		$group = $variable[0];
 		$tag = $variable[1];
 		$localized_tag = $variable[2];
 		$callback = $variable[3];
@@ -576,6 +574,9 @@ function humanstxt_replace_variables(string $string): string
 
 		// does one of the variables occur in the string?
 		if (stripos($string, $tag) !== false || stripos($string, $localized_tag) !== false) {
+			if (! is_callable($callback)) {
+				continue;
+			}
 			$result = call_user_func($callback);
 			$result = filter_var($result, FILTER_UNSAFE_RAW);
 			$result = false !== $result ? $result : '';
@@ -593,9 +594,9 @@ function humanstxt_replace_variables(string $string): string
  *
  * Each array value represents a content-variable:
  * array(string $group, string $varname, string $translated-varname,
- *   callback $function [, string $description, bool $preview = true]);
+ *   callback $function [, string $description]);
  *
- * @return array<int,array<bool|string>> $variables Default content-variables.
+ * @return array<int,array<string>> $variables Default content-variables.
  */
 function humanstxt_variables(): array
 {
@@ -607,7 +608,7 @@ function humanstxt_variables(): array
 	$variables[] = array('wordpress', 'wp-tagline', /* translators: variable name for the site/blog tagline (description) */ __('wp-tagline', 'humanstxt'), 'humanstxt_callback_wptagline', __('Tagline (description) of site/blog', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-posts', /* translators: variable name for the number of published posts */ __('wp-posts', 'humanstxt'), 'humanstxt_callback_wpposts', __('Number of published posts', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-pages', /* translators: variable name for the number of published pages */ __('wp-pages', 'humanstxt'), 'humanstxt_callback_wppages', __('Number of published pages', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-authors', /* translators: variable name for the author list */ __('wp-authors', 'humanstxt'), 'humanstxt_callback_wpauthors', __('Active authors and their contact details', 'humanstxt'), false);
+	$variables[] = array('wordpress', 'wp-authors', /* translators: variable name for the author list */ __('wp-authors', 'humanstxt'), 'humanstxt_callback_wpauthors', __('Active authors and their contact details', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-lastupdate', /* translators: variable name for the "last modified" timestamp */ __('wp-lastupdate', 'humanstxt'), 'humanstxt_callback_lastupdate', __('Date of last modified post/page', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-language', /* translators: variable name for WordPress languages(s) */ __('wp-language', 'humanstxt'), 'humanstxt_callback_wplanguage', __('WordPress language(s)', 'humanstxt'));
 	$variables[] = array('wordpress', 'wp-timezone', /* translators: variable name for WordPress timezone */ __('wp-timezone', 'humanstxt'), 'humanstxt_callback_wptimezone', __('WordPress timezone', 'humanstxt'));
@@ -638,7 +639,7 @@ function humanstxt_variables(): array
 /**
  * Returns an array all valid content-variables.
  *
- * @return array<int,array<bool|string>> $variables Valid content-variables.
+ * @return array<int,array<string>> $variables Valid content-variables.
  */
 function humanstxt_valid_variables(): array
 {
@@ -651,7 +652,7 @@ function humanstxt_valid_variables(): array
 			continue;
 		}
 		// delete if variable callback is not a function
-		if (! is_string($variable[3]) || ! function_exists($variable[3])) {
+		if (! function_exists($variable[3])) {
 			unset($variables[$key]);
 			continue;
 		}
