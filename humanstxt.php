@@ -112,8 +112,7 @@ function humanstxt_authortag(): void
 
 /**
  * Returns a XHTML-conform author link tag, pointed to
- * the humans.txt URL, after applying the 'humans_authortag'
- * filter to it.
+ * the humans.txt URL.
  *
  * @since 1.0.4
  *
@@ -121,7 +120,8 @@ function humanstxt_authortag(): void
  */
 function get_humanstxt_authortag(): string
 {
-	$authortag = apply_filters('humans_authortag', '<link rel="author" type="text/plain" href="' . home_url('humans.txt') . '" />' . "\n");
+	$htmlTag = sprintf('<link rel="author" type="text/plain" href="%s" />', home_url('humans.txt'));
+	$htmlTag .= PHP_EOL;
 	$authortag = filter_var($authortag, FILTER_UNSAFE_RAW);
 	$authortag = false !== $authortag ? $authortag : '';
 	return $authortag;
