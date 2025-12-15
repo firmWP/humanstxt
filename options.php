@@ -16,9 +16,7 @@ define('HUMANSTXT_PLUGIN_BASENAME', plugin_basename(HUMANSTXT_PLUGIN_FILE));
 define('HUMANSTXT_OPTIONS_URL', admin_url('options-general.php?page=humanstxt'));
 
 /**
- * URL to Humans TXT options page.
- *
- * @since 1.1.0
+ * URL to Humans TXT revisions page.
  */
 define('HUMANSTXT_REVISIONS_URL', add_query_arg(array('subpage' => 'revisions'), HUMANSTXT_OPTIONS_URL));
 
@@ -107,14 +105,15 @@ function humanstxt_uninstall(): void
 /**
  * Callback function for 'admin_notices' action.
  * Prints warning message if the current WP version is too old.
- *
- * @since 1.0.1
  */
 function humanstxt_version_warning(): void
 {
 	if (! humanstxt_is_wp(HUMANSTXT_VERSION_REQUIRED)) {
-		$updatelink = ' <a href="' . admin_url('update-core.php') . '">' . sprintf(__('Please update your WordPress installation.', 'humanstxt')) . '</a>';
-		print '<div id="humanstxt-warning" class="updated fade"><p><strong>' . sprintf(__('Humans TXT %1$s requires WordPress %2$s or higher.', 'humanstxt'), HUMANSTXT_VERSION, HUMANSTXT_VERSION_REQUIRED) . '</strong>' . (current_user_can('update_core') ? $updatelink : '') . '</p></div>';
+		$update_link = ' <a href="' . admin_url('update-core.php') . '">' . __('Please update your WordPress installation.', 'humanstxt') . '</a>';
+		print '<div id="humanstxt-warning" class="updated fade"><p><strong>'
+			. sprintf(__('Humans TXT %1$s requires WordPress %2$s or higher.', 'humanstxt'), HUMANSTXT_VERSION, HUMANSTXT_VERSION_REQUIRED)
+			. '</strong>' . (current_user_can('update_core') ? $update_link : '')
+			. '</p></div>';
 	}
 }
 
@@ -122,8 +121,6 @@ function humanstxt_version_warning(): void
  * Return TRUE if given $version is higher or equals the running
  * WordPress version. This function consideres pre-release versions,
  * such as 3.0.0-dev, as high as their final release counterparts (like 4.0.0).
- *
- * @since 1.2.0
  */
 function humanstxt_is_wp(string $version): bool
 {
@@ -232,8 +229,6 @@ function humanstxt_contextual_help(): void
  * adds it as a new revision, if the current content doesn't
  * equal the given $content.
  *
- * @since 1.2.0
- *
  * @param string $content New content of the humans.txt file
  */
 function humanstxt_update_content(string $content): void
@@ -280,8 +275,6 @@ function humanstxt_update_options(): void
  * Restores the given $revision of the humans.txt, if revisions
  * aren't disabled. Redirects to the plugin options page afterwards.
  *
- * @since 1.1.0
- *
  * @param int $revision Revisons number (key)
  */
 function humanstxt_restore_revision(int $revision): void
@@ -303,8 +296,6 @@ function humanstxt_restore_revision(int $revision): void
  * humans.txt file and if successful rename it to humans.txt-{time}.bak,
  * so this plugin can work properly. Redirects to the plugin
  * options page afterwards.
- *
- * @since 1.2.0
  *
  * @global $wp_filesystem
  */
@@ -417,8 +408,6 @@ function humanstxt_rating()
 /**
  * Callback function of 'wp_ajax_humanstxt-preview' action.
  * Shows a preview of the humans.txt file.
- *
- * @since 1.2.0
  */
 function humanstxt_ajax_preview(): void
 {
@@ -452,25 +441,15 @@ function humanstxt_options(): void
 
 /**
  * Prints the plugin options page.
- *
- * @since 1.1.0
  */
 function humanstxt_options_page(): void
 {
 ?>
-	<div id="humanstxt" class="wrap
-	<?php
-	if (! humanstxt_is_wp('3.4')) :
-	?>
-	not-wp34<?php endif; ?>
-	<?php
-	if (! humanstxt_is_wp('3.2')) :
-	?>
-	not-wp32<?php endif; ?>">
+	<div id="humanstxt" class="wrap">
 
 		<h1><?php _e('Humans TXT', 'humanstxt'); ?></h1>
 
-		<?php $faqlink = sprintf('<a href="%s">%s</a>', 'http://wordpress.org/extend/plugins/humanstxt/faq/', __('Please read the FAQ...', 'humanstxt')); ?>
+		<?php $faq_link = sprintf('<a href="%s">%s</a>', 'http://wordpress.org/extend/plugins/humanstxt/faq/', __('Please read the FAQ...', 'humanstxt')); ?>
 
 		<?php if (isset($_GET['settings-updated'])) : ?>
 			<div class="updated">
@@ -486,11 +465,11 @@ function humanstxt_options_page(): void
 			</div>
 		<?php elseif (isset($_GET['rename-failed'])) : ?>
 			<div class="error">
-				<p><strong><?php _e('Error: The content has been imported, but the original file could not be renamed.', 'humanstxt'); ?></strong> <?php echo $faqlink; ?></p>
+				<p><strong><?php _e('Error: The content has been imported, but the original file could not be renamed.', 'humanstxt'); ?></strong> <?php echo $faq_link; ?></p>
 			</div>
 		<?php elseif (isset($_GET['import-failed'])) : ?>
 			<div class="error">
-				<p><strong><?php _e('Error: Import failed.', 'humanstxt'); ?></strong> <?php echo $faqlink; ?></p>
+				<p><strong><?php _e('Error: Import failed.', 'humanstxt'); ?></strong> <?php echo $faq_link; ?></p>
 			</div>
 		<?php endif; ?>
 
@@ -498,7 +477,7 @@ function humanstxt_options_page(): void
 			<div class="error">
 				<p>
 					<strong><?php _e('Error: The site root already contains a physical humans.txt file.', 'humanstxt'); ?></strong>
-					<?php echo $faqlink; ?>
+					<?php echo $faq_link; ?>
 					<?php
 					if (current_user_can('administrator')) {
 						printf( /* translators: Please read the FAQ... or try to ... */__('or try to <a href="%s">import and rename</a> the physical humans.txt file.', 'humanstxt'), wp_nonce_url(add_query_arg(array('action' => 'import-file'), HUMANSTXT_OPTIONS_URL), 'import-humanstxt-file'));
@@ -508,7 +487,7 @@ function humanstxt_options_page(): void
 			</div>
 		<?php elseif (get_option('permalink_structure') === '' && current_user_can('manage_options')) : ?>
 			<div class="error">
-				<p><strong><?php printf(__('Error: Please <a href="%s">update your permalink structure</a> to something other than the default.', 'humanstxt'), admin_url('options-permalink.php')); ?></strong> <?php echo $faqlink; ?></p>
+				<p><strong><?php printf(__('Error: Please <a href="%s">update your permalink structure</a> to something other than the default.', 'humanstxt'), admin_url('options-permalink.php')); ?></strong> <?php echo $faq_link; ?></p>
 			</div>
 		<?php endif; ?>
 
@@ -647,8 +626,6 @@ function humanstxt_options_page(): void
 
 /**
  * Prints the plugin options revisions page.
- *
- * @since 1.1.0
  */
 function humanstxt_revisions_page(): void
 {

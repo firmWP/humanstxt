@@ -11,8 +11,6 @@ if (! function_exists('humanstxt_callback_ip')) :
 	 * Returns the IP address of the server under which
 	 * the current script is executing.
 	 *
-	 * @since 1.2
-	 *
 	 * @return string Value of $_SERVER['SERVER_ADDR'], or NULL
 	 */
 	function humanstxt_callback_ip(): string
@@ -25,8 +23,6 @@ endif;
 if (! function_exists('humanstxt_callback_os')) :
 	/**
 	 * Returns the server's operating system name.
-	 *
-	 * @since 1.2
 	 *
 	 * @return string Value of php_uname('s')
 	 */
@@ -42,8 +38,6 @@ if (! function_exists('humanstxt_callback_server')) :
 	 * Returns the server identification string,
 	 * given in the headers when responding to requests.
 	 * E.g.: Apache/2.2.17 (Unix) mod_ssl/2.2.17 DAV/2 PHP/5.3.6
-	 *
-	 * @since 1.2
 	 *
 	 * @return string Value of $_SERVER['SERVER_SOFTWARE']
 	 */
@@ -69,8 +63,6 @@ if (! function_exists('humanstxt_callback_zendversion')) :
 	/**
 	 * Returns the PHP's Zend engine version.
 	 *
-	 * @since 1.2
-	 *
 	 * @return string Value of zend_version()
 	 */
 	function humanstxt_callback_zendversion()
@@ -82,8 +74,6 @@ endif;
 if (! function_exists('humanstxt_callback_mysqlversion')) :
 	/**
 	 * Returns the server's MySQL version.
-	 *
-	 * @since 1.2
 	 *
 	 * @return string MySQL version.
 	 */
@@ -99,8 +89,6 @@ if (! function_exists('humanstxt_callback_timezone')) :
 	 * Returns the server's timezone, as user-friendly as possible.
 	 * Something like: "US/Central (-05:00)", "Asia/Bangkok (+07:00)"
 	 * or "+01:00".
-	 *
-	 * @since 1.2
 	 *
 	 * @return string Server timezone.
 	 */
@@ -129,8 +117,6 @@ if (! function_exists('humanstxt_callback_wpblogname')) :
 	/**
 	 * Returns the site/blog title.
 	 *
-	 * @since 1.0.5
-	 *
 	 * @return string Site/blog name.
 	 */
 	function humanstxt_callback_wpblogname()
@@ -143,8 +129,6 @@ if (! function_exists('humanstxt_callback_wptagline')) :
 	/**
 	 * Returns the site/blog description (tagline).
 	 *
-	 * @since 1.0.5
-	 *
 	 * @return string Site/blog description.
 	 */
 	function humanstxt_callback_wptagline()
@@ -156,8 +140,6 @@ endif;
 if (! function_exists('humanstxt_callback_wpcharset')) :
 	/**
 	 * Returns the encoding used for pages and feeds.
-	 *
-	 * @since 1.0.5
 	 *
 	 * @return string Site/blog encoding.
 	 */
@@ -172,8 +154,6 @@ if (! function_exists('humanstxt_callback_wptimezone')) :
 	 * Returns the timezone WordPress uses, as user-friendly as possible.
 	 * Something like: "US/Central (-05:00)", "Asia/Singapore (+08:00)"
 	 * or "+02:00".
-	 *
-	 * @since 1.2
 	 *
 	 * @return string WordPress timezone.
 	 */
@@ -199,8 +179,6 @@ if (! function_exists('humanstxt_callback_wpposts')) :
 	 * Returns count of posts that are published. Can be
 	 * modified using the 'humanstxt_postcount' filter.
 	 *
-	 * @since 1.0.4
-	 *
 	 * @return ?string Number of published posts
 	 */
 	function humanstxt_callback_wpposts(): ?string
@@ -215,8 +193,6 @@ if (! function_exists('humanstxt_callback_wppages')) :
 	/**
 	 * Returns count of pages that are published. Can be
 	 * modified using the 'humanstxt_pagecount' filter.
-	 *
-	 * @since 1.0.4
 	 *
 	 * @return ?string Number of published pages
 	 */
@@ -270,8 +246,6 @@ endif;
 if (! function_exists('humanstxt_callback_wpauthors')) :
 	/**
 	 * Returns all authors with a least 1 post.
-	 *
-	 * @since 1.1.0
 	 *
 	 * @global $wpdb
 	 *

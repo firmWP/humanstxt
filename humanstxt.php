@@ -14,15 +14,11 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 /**
  * Humans TXT plugin version.
- *
- * @since 1.0.1
  */
-define('HUMANSTXT_VERSION', '1.3.1');
+define('HUMANSTXT_VERSION', '20.25.12');
 
 /**
  * Required WordPress version for this plugin.
- *
- * @since 1.1.0
  */
 define('HUMANSTXT_VERSION_REQUIRED', '6.9');
 
@@ -39,8 +35,6 @@ define('HUMANSTXT_PLUGIN_PATH', dirname(HUMANSTXT_PLUGIN_FILE));
 /**
  * Default amount of stored revisions.
  * Use the 'humanstxt_max_revisions' filter to change it.
- *
- * @since 1.1.0
  */
 define('HUMANSTXT_MAX_REVISIONS', 50);
 
@@ -56,14 +50,13 @@ $humanstxt_defaults = array(
 );
 
 /**
- * Register plugin actions, filters and shortcode.
+ * Register plugin actions and filters.
  */
 add_action('init', 'humanstxt_init');
 add_action('template_redirect', 'humanstxt_template_redirect', 8);
 add_action('do_humans', 'humanstxt_do_humans');
 add_filter('humans_txt', 'humanstxt_replace_variables');
 add_filter('humanstxt_content', 'humanstxt_content_normalize');
-add_shortcode('humanstxt', '_humanstxt_shortcode');
 
 /**
  * Load plugin code for WordPress backend, if needed.
@@ -74,8 +67,6 @@ if (is_admin()) {
 
 /**
  * Echos the content of the virtual humans.txt file.
- *
- * @since 1.0.4
  */
 function humanstxt(): void
 {
@@ -85,8 +76,6 @@ function humanstxt(): void
 /**
  * Returns the content of the virtual humans.txt file,
  * after applying the 'humans_txt' filter to it.
- *
- * @since 1.0.4
  *
  * @return string Content of the virtual humans.txt file
  */
@@ -109,8 +98,6 @@ function humanstxt_authortag(): void
 /**
  * Returns a XHTML-conform author link tag, pointed to
  * the humans.txt URL.
- *
- * @since 1.0.4
  *
  * @return string XHTML-conform author link tag
  */
@@ -238,8 +225,6 @@ function humanstxt_load_textdomain(): void
  * Loads plugin options from database and sets missing
  * options to their default values.
  *
- * @since 1.0.5
- *
  * @global $humanstxt_options
  * @global $humanstxt_defaults
  */
@@ -305,8 +290,6 @@ function humanstxt_content(): string
 /**
  * Normalizes the line endings of the given $string.
  *
- * @since 1.1.0
- *
  * @param string $string String to be normalized
  * @return string Normalized string
  */
@@ -319,12 +302,10 @@ function humanstxt_content_normalize(string $string): string
 
 /**
  * Returns an array with all stored revisions, containing each
- * revions's content, author-id and it's time of creation.
- * Returns FALSE if revisions are disabled.
+ * revisions' content, author-id and it's time of creation.
  *
- * @since 1.1.0
- *
- * @return list<array{date: int, user: int, content: string}> Revisions of the humans.txt file
+ * @return list<array{date: int, user: int, content: string}>|false
+ *   Revisions of the humans.txt file or false.
  */
 function humanstxt_revisions(): array|false
 {
@@ -376,8 +357,6 @@ function humanstxt_revisions(): array|false
  * Stores a new revision with the given $content.
  * Ensures that only the last 50 revisons are stored.
  * Limit can be changed with the 'humanstxt_max_revisions' filter.
- *
- * @since 1.1.0
  *
  * @param string $content Revisions content
  */
