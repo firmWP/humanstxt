@@ -24,11 +24,11 @@ if (! defined('ABSPATH')) {
 define('HUMANSTXT_VERSION', '1.3.1');
 
 /**
- * Required WordPress version.
+ * Required WordPress version for this plugin.
  *
  * @since 1.1.0
  */
-define('HUMANSTXT_VERSION_REQUIRED', '3.0');
+define('HUMANSTXT_VERSION_REQUIRED', '6.9');
 
 /**
  * Absolute path to the main Humans TXT plugin file.
