@@ -166,7 +166,7 @@ function humanstxt_init(): void
 		add_rewrite_rule('humans\.txt$', $wp_rewrite->index . '?humans=1', 'top');
 
 		// register author link tag action if enabled
-		if (humanstxt_option('authortag') !== null) {
+		if (humanstxt_option('authortag')) {
 			add_action('wp_head', 'humanstxt_authortag', 1);
 		}
 
