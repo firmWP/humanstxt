@@ -70,13 +70,6 @@ add_filter('humanstxt_content', 'humanstxt_content_normalize');
 add_shortcode('humanstxt', '_humanstxt_shortcode');
 
 /**
- * Load legacy code, if necessary.
- */
-if (version_compare(get_bloginfo('version'), '3.2', '<')) {
-	require_once HUMANSTXT_PLUGIN_PATH . '/legacy.php';
-}
-
-/**
  * Load plugin code for WordPress backend, if needed.
  */
 if (is_admin()) {
