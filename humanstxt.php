@@ -1,13 +1,14 @@
 <?php
 /*
 Plugin Name: Humans TXT
-Plugin URI: http://wordpress.org/plugins/humanstxt/
-Description: Credit the people behind your website in your <strong>humans.txt</strong> file. Easy to edit, directly within WordPress.
+Plugin URI: http://github.com/firmWP/humanstxt/
+Description: Credit the people behind your website with the <strong>humans.txt</strong> file. Editable directly within WordPress.
 Text Domain: humanstxt
 Domain Path: /languages
-Version: 1.3.1
-Author: Till Krüss
-Author URI: http://till.kruss.me/
+Version: 20.25.12
+Maintainer: Daniel Șerbănescu
+Original Author: Till Krüss
+Original Author URI: http://till.kruss.me/
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
@@ -44,9 +45,9 @@ define('HUMANSTXT_MAX_REVISIONS', 50);
  * @global array $humanstxt_defaults Default plugin settings.
  */
 $humanstxt_defaults = array(
-	'enabled'   => false,
-	'authortag' => false,
-	'roles'     => array(),
+	'enabled'    => false,
+	'author_tag' => false,
+	'roles'      => array(),
 );
 
 /**
@@ -90,9 +91,9 @@ function get_humanstxt(): string
 /**
  * Echos a XHTML-conform author link tag.
  */
-function humanstxt_authortag(): void
+function humanstxt_author_tag(): void
 {
-	print get_humanstxt_authortag();
+	print get_humanstxt_author_tag();
 }
 
 /**
@@ -101,12 +102,12 @@ function humanstxt_authortag(): void
  *
  * @return string XHTML-conform author link tag
  */
-function get_humanstxt_authortag(): string
+function get_humanstxt_author_tag(): string
 {
-	$htmlTag = sprintf('<link rel="author" type="text/plain" href="%s" />', home_url('humans.txt'));
-	$htmlTag .= PHP_EOL;
-	$authortag = filter_var($htmlTag, FILTER_UNSAFE_RAW);
-	return $authortag;
+	$html_tag = sprintf('<link rel="author" type="text/plain" href="%s" />', home_url('humans.txt'));
+	$html_tag .= PHP_EOL;
+	$author_tag = filter_var($html_tag, FILTER_UNSAFE_RAW);
+	return $author_tag;
 }
 
 /**
@@ -148,8 +149,8 @@ function humanstxt_init(): void
 		add_rewrite_rule('humans\.txt$', $wp_rewrite->index . '?humans=1', 'top');
 
 		// register author link tag action if enabled
-		if (humanstxt_option('authortag')) {
-			add_action('wp_head', 'humanstxt_authortag', 1);
+		if (humanstxt_option('author_tag')) {
+			add_action('wp_head', 'humanstxt_author_tag', 1);
 		}
 
 		// flush rewrite rules if ours is missing
@@ -200,15 +201,6 @@ function humanstxt_do_humans(): void
 	do_action('do_humanstxt');
 
 	print get_humanstxt();
-}
-
-/**
- * @param array<string> $matches
- * @return string
- */
-function _humanstxt_antispambot_function(array $matches): string
-{
-	return antispambot($matches[0]);
 }
 
 /**
@@ -355,7 +347,7 @@ function humanstxt_revisions(): array|false
 
 /**
  * Stores a new revision with the given $content.
- * Ensures that only the last 50 revisons are stored.
+ * Ensures that only the last 50 revisions are stored.
  * Limit can be changed with the 'humanstxt_max_revisions' filter.
  *
  * @param string $content Revisions content
@@ -435,32 +427,173 @@ function humanstxt_variables(): array
 	humanstxt_load_textdomain();
 	require_once HUMANSTXT_PLUGIN_PATH . '/callbacks.php';
 
-	$variables   = array();
-	$variables[] = array('wordpress', 'wp-title', /* translators: variable name for the site/blog name (title) */ __('wp-title', 'humanstxt'), 'humanstxt_callback_wpblogname', __('Name (title) of site/blog', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-tagline', /* translators: variable name for the site/blog tagline (description) */ __('wp-tagline', 'humanstxt'), 'humanstxt_callback_wptagline', __('Tagline (description) of site/blog', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-posts', /* translators: variable name for the number of published posts */ __('wp-posts', 'humanstxt'), 'humanstxt_callback_wpposts', __('Number of published posts', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-pages', /* translators: variable name for the number of published pages */ __('wp-pages', 'humanstxt'), 'humanstxt_callback_wppages', __('Number of published pages', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-authors', /* translators: variable name for the author list */ __('wp-authors', 'humanstxt'), 'humanstxt_callback_wpauthors', __('Active authors and their contact details', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-last-update', /* translators: variable name for the "last modified" timestamp */ __('wp-last-update', 'humanstxt'), 'humanstxt_callback_last_update', __('Date of last modified post/page', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-language', /* translators: variable name for WordPress languages(s) */ __('wp-language', 'humanstxt'), 'humanstxt_callback_wplanguage', __('WordPress language(s)', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-timezone', /* translators: variable name for WordPress timezone */ __('wp-timezone', 'humanstxt'), 'humanstxt_callback_wptimezone', __('WordPress timezone', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-version', /* translators: variable name for the installed WordPress version */ __('wp-version', 'humanstxt'), 'humanstxt_callback_wpversion', __('Installed WordPress version', 'humanstxt'));
-	$variables[] = array('wordpress', 'wp-charset', /* translators: variable name for the encoding (charset) used by WordPress */ __('wp-charset', 'humanstxt'), 'humanstxt_callback_wpcharset', __('Encoding used for pages and feeds', 'humanstxt'));
+	$variables = array(
+		array(
+			'wordpress',
+			'wp-title',
+			/* translators: variable name for the site/blog name (title) */
+			__('wp-title', 'humanstxt'),
+			'humanstxt_callback_wp_blog_name',
+			__('Name (title) of site/blog', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-tagline',
+			/* translators: variable name for the site/blog tagline (description) */
+			__('wp-tagline', 'humanstxt'),
+			'humanstxt_callback_wp_tagline',
+			__('Tagline (description) of site/blog', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-posts',
+			/* translators: variable name for the number of published posts */
+			__('wp-posts', 'humanstxt'),
+			'humanstxt_callback_wp_posts',
+			__('Number of published posts', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-pages', /* translators: variable name for the number of published pages */
+			__('wp-pages', 'humanstxt'),
+			'humanstxt_callback_wp_pages',
+			__('Number of published pages', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-authors', /* translators: variable name for the author list */
+			__('wp-authors', 'humanstxt'),
+			'humanstxt_callback_wp_authors',
+			__('Active authors and their contact details', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-last-update', /* translators: variable name for the "last modified" timestamp */
+			__('wp-last-update', 'humanstxt'),
+			'humanstxt_callback_last_update',
+			__('Date of last modified post/page', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-language', /* translators: variable name for WordPress languages(s) */
+			__('wp-language', 'humanstxt'),
+			'humanstxt_callback_wp_language',
+			__('WordPress language(s)', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-timezone', /* translators: variable name for WordPress timezone */
+			__('wp-timezone', 'humanstxt'),
+			'humanstxt_callback_wp_timezone',
+			__('WordPress timezone', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-version', /* translators: variable name for the installed WordPress version */
+			__('wp-version', 'humanstxt'),
+			'humanstxt_callback_wp_version',
+			__('Installed WordPress version', 'humanstxt')
+		),
+		array(
+			'wordpress',
+			'wp-charset', /* translators: variable name for the encoding (charset) used by WordPress */
+			__('wp-charset', 'humanstxt'),
+			'humanstxt_callback_wp_charset',
+			__('Encoding used for pages and feeds', 'humanstxt')
+		),
+		array(
+			'server',
+			'server-timezone', /* translators: variable name for server timezone */
+			__('server-timezone', 'humanstxt'),
+			'humanstxt_callback_timezone',
+			__('Server timezone', 'humanstxt')
+		),
+		array(
+			'server',
+			'server-ip', /* translators: variable name for server ip address */
+			__('server-ip', 'humanstxt'),
+			'humanstxt_callback_ip',
+			__('Server IP address', 'humanstxt')
+		),
+		array(
+			'server',
+			'server-os', /* translators: variable name for operating system name */
+			__('server-os', 'humanstxt'),
+			'humanstxt_callback_os',
+			__('Operating system name', 'humanstxt')
+		),
+		array(
+			'server',
+			'server-identity', /* translators: variable name server identification string  */
+			__('server-identity', 'humanstxt'),
+			'humanstxt_callback_server',
+			__('Server identification', 'humanstxt')
+		),
+		array(
+			'server',
+			'php-version', /* translators: variable name for php parser version */
+			__('php-version', 'humanstxt'),
+			'humanstxt_callback_phpversion',
+			__('PHP parser version', 'humanstxt')
+		),
+		array(
+			'server',
+			'zend-version', /* translators: variable name for zend engine version */
+			__('zend-version', 'humanstxt'),
+			'humanstxt_callback_zend_version',
+			__('Zend Engine version', 'humanstxt')
+		),
+		array(
+			'server',
+			'mysql-version', /* translators: variable name for MySQL server version */
+			__('mysql-version', 'humanstxt'),
+			'humanstxt_callback_mysql_version',
+			__('MySQL server version', 'humanstxt')
+		),
 
-	$variables[] = array('server', 'server-timezone', /* translators: variable name for server timezone */ __('server-timezone', 'humanstxt'), 'humanstxt_callback_timezone', __('Server timezone', 'humanstxt'));
-	$variables[] = array('server', 'server-ip', /* translators: variable name for server ip address */ __('server-ip', 'humanstxt'), 'humanstxt_callback_ip', __('Server IP address', 'humanstxt'));
-	$variables[] = array('server', 'server-os', /* translators: variable name for operating system name */ __('server-os', 'humanstxt'), 'humanstxt_callback_os', __('Operating system name', 'humanstxt'));
-	$variables[] = array('server', 'server-identity', /* translators: variable name server identification string  */ __('server-identity', 'humanstxt'), 'humanstxt_callback_server', __('Server identification', 'humanstxt'));
-	$variables[] = array('server', 'php-version', /* translators: variable name for php parser version */ __('php-version', 'humanstxt'), 'humanstxt_callback_phpversion', __('PHP parser version', 'humanstxt'));
-	$variables[] = array('server', 'zend-version', /* translators: variable name for zend engine version */ __('zend-version', 'humanstxt'), 'humanstxt_callback_zendversion', __('Zend Engine version', 'humanstxt'));
-	$variables[] = array('server', 'mysql-version', /* translators: variable name for MySQL server version */ __('mysql-version', 'humanstxt'), 'humanstxt_callback_mysqlversion', __('MySQL server version', 'humanstxt'));
-
-	$variables[] = array('addons', 'wp-plugins', /* translators: variable name for activated WordPress plugins */ __('wp-plugins', 'humanstxt'), 'humanstxt_callback_wpplugins', __('Activated WordPress plugins', 'humanstxt'));
-	$variables[] = array('addons', 'wp-theme', /* translators: variable name for the summary of the active WordPress theme */ __('wp-theme', 'humanstxt'), 'humanstxt_callback_wptheme', __('Summary of the active WordPress theme', 'humanstxt'));
-	$variables[] = array('addons', 'wp-theme-name', /* translators: variable name for the name of the active WordPress theme */ __('wp-theme-name', 'humanstxt'), 'humanstxt_callback_wptheme_name', __('Name of the active theme', 'humanstxt'));
-	$variables[] = array('addons', 'wp-theme-version', /* translators: variable name for the version of the active WordPress theme */ __('wp-theme-version', 'humanstxt'), 'humanstxt_callback_wptheme_version', __('Version of the active theme', 'humanstxt'));
-	$variables[] = array('addons', 'wp-theme-author', /* translators: variable name for the author name of the active WordPress theme */ __('wp-theme-author', 'humanstxt'), 'humanstxt_callback_wptheme_author', __('Author name of the active theme', 'humanstxt'));
-	$variables[] = array('addons', 'wp-theme-author-link', /* translators: variable name for the author link of the active WordPress theme */ __('wp-theme-author-link', 'humanstxt'), 'humanstxt_callback_wptheme_author_link', __('Author link of the active theme', 'humanstxt'));
+		array(
+			'addons',
+			'wp-plugins', /* translators: variable name for activated WordPress plugins */
+			__('wp-plugins', 'humanstxt'),
+			'humanstxt_callback_wp_plugins',
+			__('Activated WordPress plugins', 'humanstxt')
+		),
+		array(
+			'addons',
+			'wp-theme', /* translators: variable name for the summary of the active WordPress theme */
+			__('wp-theme', 'humanstxt'),
+			'humanstxt_callback_wp_theme',
+			__('Summary of the active WordPress theme', 'humanstxt')
+		),
+		array(
+			'addons',
+			'wp-theme-name', /* translators: variable name for the name of the active WordPress theme */
+			__('wp-theme-name', 'humanstxt'),
+			'humanstxt_callback_wp_theme_name',
+			__('Name of the active theme', 'humanstxt')
+		),
+		array(
+			'addons',
+			'wp-theme-version', /* translators: variable name for the version of the active WordPress theme */
+			__('wp-theme-version', 'humanstxt'),
+			'humanstxt_callback_wp_theme_version',
+			__('Version of the active theme', 'humanstxt')
+		),
+		array(
+			'addons',
+			'wp-theme-author', /* translators: variable name for the author name of the active WordPress theme */
+			__('wp-theme-author', 'humanstxt'),
+			'humanstxt_callback_wp_theme_author',
+			__('Author name of the active theme', 'humanstxt')
+		),
+		array(
+			'addons',
+			'wp-theme-author-link', /* translators: variable name for the author link of the active WordPress theme */
+			__('wp-theme-author-link', 'humanstxt'),
+			'humanstxt_callback_wp_theme_author_link',
+			__('Author link of the active theme', 'humanstxt')
+		),
+	);
 
 	return $variables;
 }
@@ -501,10 +634,8 @@ function humanstxt_default_content(): string
 {
 	humanstxt_load_textdomain();
 
-	/* translators: only translate the text inside angle brackets < > to keep the humans.txt international. if the variable names are translated, you may translate them here too. */
-	return humanstxt_content_normalize(
-		__(
-			'/* the humans responsible & colophon */
+	$placeholder = <<<TEXT
+/* the humans responsible & colophon */
 /* humanstxt.org */
 
 /* TEAM */
@@ -521,14 +652,19 @@ function humanstxt_default_content(): string
 		[...]
 
 /* SITE */
-	Last update: $wp-last-update$
+	Last update: \$wp-last-update\$
 	Standards: <HTML5, CSS3, ...>
-	CMS: WordPress $wp-version$ (running PHP $php-version$)
+	CMS: WordPress \$wp-version\$ (running PHP \$php-version\$)
 	Language: <English, Klingon, ...>
 	Components: <jQuery, Typekit, Modernizr, ...>
 	IDE: <Coda, Zend Studio, Photoshop, Terminal, ...>
-',
-			'humanstxt'
-		)
+TEXT;
+
+	/*
+	translators: only translate the text inside angle brackets < > to keep the humans.txt international.
+	If the variable names are translated, you may translate them here too.
+	*/
+	return humanstxt_content_normalize(
+		__($placeholder,	'humanstxt')
 	);
 }

@@ -31,7 +31,7 @@ add_action('admin_print_scripts', 'humanstxt_admin_print_scripts');
 add_action('wp_ajax_humanstxt-preview', 'humanstxt_ajax_preview');
 add_action('after_plugin_row_humans-txt/plugin.php', 'humanstxt_plugin_notice', 10, 3);
 add_action('after_plugin_row_humans-dot-txt/humans-dot-txt.php', 'humanstxt_plugin_notice', 10, 3);
-add_filter('plugin_action_links_' . HUMANSTXT_PLUGIN_BASENAME, 'humanstxt_actionlinks');
+add_filter('plugin_action_links_' . HUMANSTXT_PLUGIN_BASENAME, 'humanstxt_action_links');
 register_uninstall_hook(__FILE__, 'humanstxt_uninstall');
 
 /**
@@ -119,7 +119,7 @@ function humanstxt_version_warning(): void
 
 /**
  * Return TRUE if given $version is higher or equals the running
- * WordPress version. This function consideres pre-release versions,
+ * WordPress version. This function considers pre-release versions,
  * such as 3.0.0-dev, as high as their final release counterparts (like 4.0.0).
  */
 function humanstxt_is_wp(string $version): bool
@@ -161,7 +161,7 @@ function humanstxt_admin_menu(): void
  * @param array<string> $actions
  * @return array<string> $actions Hijacked actions.
  */
-function humanstxt_actionlinks(array $actions): array
+function humanstxt_action_links(array $actions): array
 {
 	return array_merge(
 		array('settings' => sprintf('<a href="%s">%s</a>', HUMANSTXT_OPTIONS_URL, __('Settings'))),
@@ -201,7 +201,7 @@ function humanstxt_contextual_help(): void
 
 	$screen = get_current_screen();
 
-	if (humanstxt_is_wp('3.3') && ! is_null($screen)) {
+	if (! is_null($screen)) {
 		$variables = '<p>' . $variables . '</p>';
 		$screen->add_help_tab(
 			array(
@@ -218,9 +218,6 @@ function humanstxt_contextual_help(): void
 			)
 		);
 		$screen->set_help_sidebar($more);
-	} elseif (! is_null($screen)) {
-		$variables = sprintf('<p><strong>%s</strong> &mdash; %s</p>', __('Variables', 'humanstxt'), $variables);
-		add_contextual_help($screen->id, $humanstxt . $variables . $more);
 	}
 }
 
@@ -252,7 +249,7 @@ function humanstxt_update_options(): void
 	// only update the admin-only options if current user is an admin
 	if (current_user_can('administrator')) {
 		$humanstxt_options['enabled']   = isset($_POST['humanstxt_enable']);
-		$humanstxt_options['authortag'] = isset($_POST['humanstxt_authortag']);
+		$humanstxt_options['author_tag'] = isset($_POST['humanstxt_author_tag']);
 
 		$humanstxt_options['roles'] = array();
 		if (isset($_POST['humanstxt_roles']) && is_array($_POST['humanstxt_roles'])) {
@@ -275,7 +272,7 @@ function humanstxt_update_options(): void
  * Restores the given $revision of the humans.txt, if revisions
  * aren't disabled. Redirects to the plugin options page afterwards.
  *
- * @param int $revision Revisons number (key)
+ * @param int $revision Revision's number (key)
  */
 function humanstxt_restore_revision(int $revision): void
 {
@@ -363,8 +360,8 @@ function humanstxt_import_file(): void
  * Prints a warning message which suggests to deactivate other
  * humans.txt plugins to avoid conflicts.
  *
- * @param string        $plugin_file WordPress plugin path
- * @param array<string> $plugin_data Plugin informations
+ * @param string        $plugin_file WordPress plugin path.
+ * @param array<string> $plugin_data Plugin information.
  * @param string        $status Plugin context: mustuse, dropins, etc.
  */
 function humanstxt_plugin_notice(string $plugin_file, array $plugin_data, string $status): void
@@ -509,8 +506,8 @@ function humanstxt_options_page(): void
 									<?php _e('Activate humans.txt file', 'humanstxt'); ?>
 								</label>
 								<br />
-								<label for="humanstxt_authortag" title="<?php esc_attr_e('Adds an <link rel="author"> tag to the site\'s <head> tag pointing to the humans.txt file.', 'humanstxt'); ?>">
-									<input name="humanstxt_authortag" type="checkbox" id="humanstxt_authortag" value="1" <?php checked(humanstxt_option('authortag')); ?> />
+								<label for="humanstxt_author_tag" title="<?php esc_attr_e('Adds an <link rel="author"> tag to the site\'s <head> tag pointing to the humans.txt file.', 'humanstxt'); ?>">
+									<input name="humanstxt_author_tag" type="checkbox" id="humanstxt_author_tag" value="1" <?php checked(humanstxt_option('author_tag')); ?> />
 									<?php _e('Add an author link tag to the site', 'humanstxt'); ?>
 								</label>
 							</fieldset>
