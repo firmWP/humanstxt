@@ -231,19 +231,11 @@ endif;
 if (! function_exists('humanstxt_callback_wplanguage')) :
 	/**
 	 * Returns user-friendly language of WordPress.
-	 * Supports WPML, qTranslate and xili-language.
-	 *
-	 * @global $sitepress
-	 * @global $q_config
-	 * @global $xili_language
 	 *
 	 * @return ?string Name(s) of language(s).
 	 */
 	function humanstxt_callback_wplanguage(): ?string
 	{
-
-		global $sitepress, $q_config, $xili_language;
-
 		require_once ABSPATH . 'wp-admin/includes/ms.php';
 
 		$separator = apply_filters('humanstxt_separator', ', ');
@@ -323,13 +315,13 @@ if (! function_exists('humanstxt_callback_wpplugins')) :
 	 * which is rewritable with the 'humanstxt_plugins_separator' filter.
 	 * Final function result can be modified with the 'humanstxt_plugins' filter.
 	 *
-	 * @return string|null $active_plugins List of active WP plugins.
+	 * @return string $active_plugins List of active WP plugins.
 	 */
-	function humanstxt_callback_wpplugins(): ?string
+	function humanstxt_callback_wpplugins(): string
 	{
+		$plugins = '';
 		$active_plugins = get_option('active_plugins', array());
 		if (is_array($active_plugins) && count($active_plugins) !== 0) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			foreach ($active_plugins as $key => $plugin_name) {
 				if (is_scalar($plugin_name)) {
 					$plugin_name = strval($plugin_name);
@@ -345,7 +337,7 @@ if (! function_exists('humanstxt_callback_wpplugins')) :
 
 			return implode($separator, $active_plugins);
 		}
-		return null;
+		return $plugins;
 	}
 endif;
 

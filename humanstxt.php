@@ -12,10 +12,6 @@ License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
-if (! defined('ABSPATH')) {
-	exit;
-}
-
 /**
  * Humans TXT plugin version.
  *
@@ -143,7 +139,7 @@ function is_humans(): bool
  */
 function humanstxt_exists(): bool
 {
-	return @file_exists(ABSPATH . 'humans.txt');
+	return file_exists(ABSPATH . 'humans.txt');
 }
 
 /**

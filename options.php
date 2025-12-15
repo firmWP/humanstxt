@@ -1,9 +1,5 @@
 <?php
 
-if (! defined('ABSPATH')) {
-	exit;
-}
-
 /**
  * URL to Humans TXT plugin folder.
  */
@@ -731,13 +727,13 @@ function humanstxt_revisions_page(): void
 				<table class="form-table ie-fixed">
 					<tr>
 						<th class="th-full">
-							<span class="alignleft"><?php printf(__('Older: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$_GET['left']]['date']))); ?></span>
-							<span class="alignright"><?php printf(__('Newer: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$_GET['right']]['date']))); ?></span>
+							<span class="alignleft"><?php printf(__('Older: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$left]['date']))); ?></span>
+							<span class="alignright"><?php printf(__('Newer: %s'), date_i18n( /* translators: DO NOT TRANSLATE! */_x('j F, Y @ G:i:s', 'revision date format'), intval($revisions[$right]['date']))); ?></span>
 						</th>
 					</tr>
 					<tr>
 						<td>
-							<div class="pre"><?php echo wp_text_diff(strval($revisions[$_GET['left']]['content']), strval($revisions[$_GET['right']]['content'])); ?></div>
+							<div class="pre"><?php echo wp_text_diff(strval($revisions[$left]['content']), strval($revisions[$right]['content'])); ?></div>
 						</td>
 					</tr>
 				</table>
@@ -781,8 +777,8 @@ function humanstxt_revisions_page(): void
 				<tbody>
 					<?php foreach ($revisions as $key => $revision) : ?>
 						<?php
-						$left = isset($_GET['left']) && isset($revisions[$_GET['left']]) ? filter_input(INPUT_GET, 'left', FILTER_VALIDATE_INT) : (($show_revision === false) ? $live_revision - 1 : $show_revision);
-						$right    = isset($_GET['right']) && isset($revisions[$_GET['right']]) ? filter_input(INPUT_GET, 'right', FILTER_VALIDATE_INT) : $live_revision;
+						$left = isset($_GET['left']) && isset($revisions[$left]) ? filter_input(INPUT_GET, 'left', FILTER_VALIDATE_INT) : (($show_revision === false) ? $live_revision - 1 : $show_revision);
+						$right    = isset($_GET['right']) && isset($revisions[$right]) ? filter_input(INPUT_GET, 'right', FILTER_VALIDATE_INT) : $live_revision;
 						?>
 						<tr<?php echo ($key === $show_revision) ? ' class="displayed-revision"' : ''; ?>>
 							<th scope="row"><input type="radio" name="left" value="<?php echo $key; ?>" <?php checked($key === $left); ?> /></th>
