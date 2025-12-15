@@ -12,7 +12,7 @@ License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (! defined('ABSPATH')) {
 	exit;
 }
 
@@ -21,24 +21,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 1.0.1
  */
-define( 'HUMANSTXT_VERSION', '1.3.1' );
+define('HUMANSTXT_VERSION', '1.3.1');
 
 /**
  * Required WordPress version.
  *
  * @since 1.1.0
  */
-define( 'HUMANSTXT_VERSION_REQUIRED', '3.0' );
+define('HUMANSTXT_VERSION_REQUIRED', '3.0');
 
 /**
  * Absolute path to the main Humans TXT plugin file.
  */
-define( 'HUMANSTXT_PLUGIN_FILE', __FILE__ );
+define('HUMANSTXT_PLUGIN_FILE', __FILE__);
 
 /**
  * Absolute path to the Humans TXT plugin directory.
  */
-define( 'HUMANSTXT_PLUGIN_PATH', dirname( HUMANSTXT_PLUGIN_FILE ) );
+define('HUMANSTXT_PLUGIN_PATH', dirname(HUMANSTXT_PLUGIN_FILE));
 
 /**
  * Default amount of stored revisions.
@@ -46,7 +46,7 @@ define( 'HUMANSTXT_PLUGIN_PATH', dirname( HUMANSTXT_PLUGIN_FILE ) );
  *
  * @since 1.1.0
  */
-define( 'HUMANSTXT_MAX_REVISIONS', 50 );
+define('HUMANSTXT_MAX_REVISIONS', 50);
 
 /**
  * Default Humans TXT plugin settings.
@@ -62,24 +62,24 @@ $humanstxt_defaults = array(
 /**
  * Register plugin actions, filters and shortcode.
  */
-add_action( 'init', 'humanstxt_init' );
-add_action( 'template_redirect', 'humanstxt_template_redirect', 8 );
-add_action( 'do_humans', 'humanstxt_do_humans' );
-add_filter( 'humans_txt', 'humanstxt_replace_variables' );
-add_filter( 'humanstxt_content', 'humanstxt_content_normalize' );
-add_shortcode( 'humanstxt', '_humanstxt_shortcode' );
+add_action('init', 'humanstxt_init');
+add_action('template_redirect', 'humanstxt_template_redirect', 8);
+add_action('do_humans', 'humanstxt_do_humans');
+add_filter('humans_txt', 'humanstxt_replace_variables');
+add_filter('humanstxt_content', 'humanstxt_content_normalize');
+add_shortcode('humanstxt', '_humanstxt_shortcode');
 
 /**
  * Load legacy code, if necessary.
  */
-if ( version_compare( get_bloginfo( 'version' ), '3.2', '<' ) ) {
+if (version_compare(get_bloginfo('version'), '3.2', '<')) {
 	require_once HUMANSTXT_PLUGIN_PATH . '/legacy.php';
 }
 
 /**
  * Load plugin code for WordPress backend, if needed.
  */
-if ( is_admin() ) {
+if (is_admin()) {
 	require_once HUMANSTXT_PLUGIN_PATH . '/options.php';
 }
 
@@ -88,7 +88,8 @@ if ( is_admin() ) {
  *
  * @since 1.0.4
  */
-function humanstxt(): void {
+function humanstxt(): void
+{
 	print get_humanstxt();
 }
 
@@ -100,17 +101,19 @@ function humanstxt(): void {
  *
  * @return string Content of the virtual humans.txt file
  */
-function get_humanstxt(): string {
-    $txt = apply_filters( 'humans_txt', humanstxt_content() );
-    $txt = filter_var( $txt, FILTER_UNSAFE_RAW);
-    $txt = false !== $txt ? $txt : '';
-    return $txt;
+function get_humanstxt(): string
+{
+	$txt = apply_filters('humans_txt', humanstxt_content());
+	$txt = filter_var($txt, FILTER_UNSAFE_RAW);
+	$txt = false !== $txt ? $txt : '';
+	return $txt;
 }
 
 /**
  * Echos a XHTML-conform author link tag.
  */
-function humanstxt_authortag(): void {
+function humanstxt_authortag(): void
+{
 	print get_humanstxt_authortag();
 }
 
@@ -123,11 +126,12 @@ function humanstxt_authortag(): void {
  *
  * @return string XHTML-conform author link tag
  */
-function get_humanstxt_authortag(): string {
-	$authortag = apply_filters( 'humans_authortag', '<link rel="author" type="text/plain" href="' . home_url( 'humans.txt' ) . '" />' . "\n" );
-    $authortag = filter_var( $authortag, FILTER_UNSAFE_RAW );
-    $authortag = false !== $authortag ? $authortag : '';
-    return $authortag;
+function get_humanstxt_authortag(): string
+{
+	$authortag = apply_filters('humans_authortag', '<link rel="author" type="text/plain" href="' . home_url('humans.txt') . '" />' . "\n");
+	$authortag = filter_var($authortag, FILTER_UNSAFE_RAW);
+	$authortag = false !== $authortag ? $authortag : '';
+	return $authortag;
 }
 
 /**
@@ -135,8 +139,9 @@ function get_humanstxt_authortag(): string {
  *
  * @return bool
  */
-function is_humans(): bool {
-	return (bool) get_query_var( 'humans' );
+function is_humans(): bool
+{
+	return (bool) get_query_var('humans');
 }
 
 /**
@@ -144,8 +149,9 @@ function is_humans(): bool {
  *
  * @return bool
  */
-function humanstxt_exists(): bool {
-	return @file_exists( ABSPATH . 'humans.txt' );
+function humanstxt_exists(): bool
+{
+	return @file_exists(ABSPATH . 'humans.txt');
 }
 
 /**
@@ -155,30 +161,31 @@ function humanstxt_exists(): bool {
  *
  * @global $wp_rewrite
  */
-function humanstxt_init(): void {
-    /** @var WP_Rewrite $wp_rewrite */
+function humanstxt_init(): void
+{
+	/** @var WP_Rewrite $wp_rewrite */
 	global $wp_rewrite;
 
-	$rewrite_rules = is_array( get_option( 'rewrite_rules' ) ) ? get_option( 'rewrite_rules' ) : array();
+	$rewrite_rules = is_array(get_option('rewrite_rules')) ? get_option('rewrite_rules') : array();
 
-	if ( humanstxt_option( 'enabled' ) !== null ) {
-		add_filter( 'query_vars', 'humanstxt_query_vars' );
-		add_rewrite_rule( 'humans\.txt$', $wp_rewrite->index . '?humans=1', 'top' );
+	if (humanstxt_option('enabled')) {
+		add_filter('query_vars', 'humanstxt_query_vars');
+		add_rewrite_rule('humans\.txt$', $wp_rewrite->index . '?humans=1', 'top');
 
 		// register author link tag action if enabled
-		if ( humanstxt_option( 'authortag' ) !== null ) {
-			add_action( 'wp_head', 'humanstxt_authortag', 1 );
+		if (humanstxt_option('authortag') !== null) {
+			add_action('wp_head', 'humanstxt_authortag', 1);
 		}
 
 		// flush rewrite rules if ours is missing
-		if ( ! array_key_exists( 'humans\.txt$', $rewrite_rules ) ) {
-			flush_rewrite_rules( false );
+		if (! array_key_exists('humans\.txt$', $rewrite_rules)) {
+			flush_rewrite_rules(false);
 		}
 	} else {
 
 		// flush rewrite rules if ours shouldn't be there
-		if ( array_key_exists( 'humans\.txt$', $rewrite_rules ) ) {
-			flush_rewrite_rules( false );
+		if (array_key_exists('humans\.txt$', $rewrite_rules)) {
+			flush_rewrite_rules(false);
 		}
 	}
 }
@@ -189,7 +196,8 @@ function humanstxt_init(): void {
  * @param array<string> $qv
  * @return array<string>
  */
-function humanstxt_query_vars( array $qv ): array {
+function humanstxt_query_vars(array $qv): array
+{
 	$qv[] = 'humans';
 
 	return $qv;
@@ -199,9 +207,10 @@ function humanstxt_query_vars( array $qv ): array {
  * Callback function for 'template_redirect' action.
  * Calls 'do_humans' action if is_humans() is positive.
  */
-function humanstxt_template_redirect(): void {
-	if ( is_humans() ) {
-		do_action( 'do_humans' );
+function humanstxt_template_redirect(): void
+{
+	if (is_humans()) {
+		do_action('do_humans');
 		exit;
 	}
 }
@@ -210,14 +219,15 @@ function humanstxt_template_redirect(): void {
  * Callback function for 'do_humans' action.
  * Calls 'do_humanstxt' action and echos get_humanstxt().
  */
-function humanstxt_do_humans(): void {
-	header( 'Content-Type: text/plain; charset=utf-8' );
-	do_action( 'do_humanstxt' );
+function humanstxt_do_humans(): void
+{
+	header('Content-Type: text/plain; charset=utf-8');
+	do_action('do_humanstxt');
 
 	print get_humanstxt();
 }
 
-if ( ! function_exists( 'humanstxt_shortcode' ) ) :
+if (! function_exists('humanstxt_shortcode')) :
 	/**
 	 * Former callback function for [humanstxt] shortcode.
 	 * Now passing through calls to _humanstxt_shortcode() for
@@ -229,8 +239,9 @@ if ( ! function_exists( 'humanstxt_shortcode' ) ) :
 	 * @param array<string> $attributes
 	 * @return string
 	 */
-	function humanstxt_shortcode( array $attributes ): string {
-		return _humanstxt_shortcode( $attributes );
+	function humanstxt_shortcode(array $attributes): string
+	{
+		return _humanstxt_shortcode($attributes);
 	}
 endif;
 
@@ -249,7 +260,8 @@ endif;
  * @param array<string> $attributes
  * @return string
  */
-function _humanstxt_shortcode( array $attributes ): string {
+function _humanstxt_shortcode(array $attributes): string
+{
 	extract(
 		shortcode_atts(
 			array(
@@ -267,111 +279,113 @@ function _humanstxt_shortcode( array $attributes ): string {
 		)
 	);
 
-	$classes = array( 'humanstxt' );
+	$classes = array('humanstxt');
 	$content = get_humanstxt();
-	$content = esc_html( $content );
+	$content = esc_html($content);
 
-	if ( ! (bool) $plain ) {
-		if ( ! (bool) $pre ) {
-			$content = nl2br( $content );
+	if (! (bool) $plain) {
+		if (! (bool) $pre) {
+			$content = nl2br($content);
 		} // convert line breaks
 
-		if ( (bool) $filter ) {
-			if ( ! (bool) $pre ) {
-				$content = wptexturize( $content );
+		if ((bool) $filter) {
+			if (! (bool) $pre) {
+				$content = wptexturize($content);
 			} // format common entities
-			$content = convert_chars( $content ); // convert certain characters
-			$content = capital_P_dangit( $content ); // correct "WordPress"
+			$content = convert_chars($content); // convert certain characters
+			$content = capital_P_dangit($content); // correct "WordPress"
 		}
 
 		// format standard headlines
-		if ( ! (bool) $pre ) {
+		if (! (bool) $pre) {
 			$headline_replacement = '<strong class="humanstxt-headline">$1</strong>';
-			$headline_replacement = apply_filters( 'humanstxt_shortcode_headline_replacement', $headline_replacement );
-			$headline_replacement = filter_var( $headline_replacement, FILTER_UNSAFE_RAW );
+			$headline_replacement = apply_filters('humanstxt_shortcode_headline_replacement', $headline_replacement);
+			$headline_replacement = filter_var($headline_replacement, FILTER_UNSAFE_RAW);
 			$headline_replacement = false !== $headline_replacement ? $headline_replacement : '<strong class="humanstxt-headline">$1</strong>';
-			$content              = preg_replace( '~/\*(.+?)\*/~', $headline_replacement, $content ) ?? $content;
+			$content              = preg_replace('~/\*(.+?)\*/~', $headline_replacement, $content) ?? $content;
 		}
 
 		// make URLs clickable
-		if ( ( (bool) $clickable && (bool) $urls ) || ( ! (bool) $clickable && (bool) $urls && isset( $attributes['urls'] ) ) ) {
-			$_content = preg_replace_callback( '#(?<!=[\'"])(?<=[*\')+.,;:!&$\s>])(\()?([\w]+?://(?:[\w\\x80-\\xff\#%~/?@\[\]-]{1,2000}|[\'*(+.,;:!=&$](?![\b\)]|(\))?([\s]|$))|(?(1)\)(?![\s<.,;:]|$)|\)))+)#is', '_make_url_clickable_cb', $content );
-			if ( ! is_null( $_content ) ) {
+		if (((bool) $clickable && (bool) $urls) || (! (bool) $clickable && (bool) $urls && isset($attributes['urls']))) {
+			$_content = preg_replace_callback('#(?<!=[\'"])(?<=[*\')+.,;:!&$\s>])(\()?([\w]+?://(?:[\w\\x80-\\xff\#%~/?@\[\]-]{1,2000}|[\'*(+.,;:!=&$](?![\b\)]|(\))?([\s]|$))|(?(1)\)(?![\s<.,;:]|$)|\)))+)#is', '_make_url_clickable_cb', $content);
+			if (! is_null($_content)) {
 				$content = $_content;
 			}
-			$content = preg_replace_callback( '#([\s>])((www)\.[\w\\x80-\\xff\#$%&~/.\-;:=,?@\[\]+]+)#is', '_make_web_ftp_clickable_cb', $content ) ?? $content;
+			$content = preg_replace_callback('#([\s>])((www)\.[\w\\x80-\\xff\#$%&~/.\-;:=,?@\[\]+]+)#is', '_make_web_ftp_clickable_cb', $content) ?? $content;
 		}
 
 		// make email addresses clickable
-		if ( ( (bool) $clickable && (bool) $emails ) || ( ! (bool) $clickable && (bool) $emails && isset( $attributes['emails'] ) ) ) {
-			$content = preg_replace_callback( '#([\s>])([.0-9a-z_+-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,})#i', '_make_email_clickable_cb', $content ) ?? $content;
+		if (((bool) $clickable && (bool) $emails) || (! (bool) $clickable && (bool) $emails && isset($attributes['emails']))) {
+			$content = preg_replace_callback('#([\s>])([.0-9a-z_+-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,})#i', '_make_email_clickable_cb', $content) ?? $content;
 		}
 
 		// make x.com account names clickable
-		if ( ( (bool) $clickable && (bool) $x ) || ( ! (bool) $clickable && (bool) $x && isset( $attributes['x'] ) ) ) {
+		if (((bool) $clickable && (bool) $x) || (! (bool) $clickable && (bool) $x && isset($attributes['x']))) {
 			$x_com_replacement = '$1<a href="http://x.com/$2" rel="external">@$2</a>';
-			$x_com_replacement = apply_filters( 'humanstxt_shortcode_x_replacement', $x_com_replacement );
-			$x_com_replacement = filter_var( $x_com_replacement, FILTER_UNSAFE_RAW );
+			$x_com_replacement = apply_filters('humanstxt_shortcode_x_replacement', $x_com_replacement);
+			$x_com_replacement = filter_var($x_com_replacement, FILTER_UNSAFE_RAW);
 			$x_com_replacement = false !== $x_com_replacement ? $x_com_replacement : '$1<a href="http://x.com/$2" rel="external">@$2</a>';
-			$content           = preg_replace( '/(^|[^a-z0-9_])[@＠]([a-z0-9_]{1,20})([@＠\xC0-\xD6\xD8-\xF6\xF8-\xFF]?)/iu', $x_com_replacement, $content ) ?? $content;
+			$content           = preg_replace('/(^|[^a-z0-9_])[@＠]([a-z0-9_]{1,20})([@＠\xC0-\xD6\xD8-\xF6\xF8-\xFF]?)/iu', $x_com_replacement, $content) ?? $content;
 		}
 
-		if ( (bool) $filter ) {
+		if ((bool) $filter) {
 			// encode email addresses to block spam bots
-			$content = preg_replace_callback( '{(?:mailto:)?((?:[-!#$%&\'*+/=?^_`.{|}~\w\x80-\xFF]+|".*?")\@(?:[-a-z0-9\x80-\xFF]+(\.[-a-z0-9\x80-\xFF]+)*\.[a-z]+|\[[\d.a-fA-F:]+\]))}xi', '_humanstxt_antispambot_function', $content ) ?? $content;
+			$content = preg_replace_callback('{(?:mailto:)?((?:[-!#$%&\'*+/=?^_`.{|}~\w\x80-\xFF]+|".*?")\@(?:[-a-z0-9\x80-\xFF]+(\.[-a-z0-9\x80-\xFF]+)*\.[a-z]+|\[[\d.a-fA-F:]+\]))}xi', '_humanstxt_antispambot_function', $content) ?? $content;
 		}
 
-		if ( (bool) $pre ) {
+		if ((bool) $pre) {
 			$classes[] = 'humanstxt-pre';
 		}
 	} else {
 		$classes[] = 'humanstxt-plain';
 	}
 
-	$content = apply_filters( 'humanstxt_shortcode_content', $content, $attributes );
-    $content = filter_var( $content, FILTER_UNSAFE_RAW );
-    $content = false !== $content ? $content : '';
+	$content = apply_filters('humanstxt_shortcode_content', $content, $attributes);
+	$content = filter_var($content, FILTER_UNSAFE_RAW);
+	$content = false !== $content ? $content : '';
 
 	// do we have an id attribute?
-	$id = preg_replace( '~[^a-z0-9_-]~i', '', $id );
-	if ( $id !== '' ) {
+	$id = preg_replace('~[^a-z0-9_-]~i', '', $id);
+	if ($id !== '') {
 		$id = ' id="' . $id . '"';
 	}
 
 	// do we have a class attribute?
-	$classes = preg_replace( '~[^a-z0-9_-]~i', '', $classes );
-	foreach ( $classes as $key => $classname ) {
-		if ( $classname === '' ) {
-			unset( $classes[ $key ] );
+	$classes = preg_replace('~[^a-z0-9_-]~i', '', $classes);
+	foreach ($classes as $key => $classname) {
+		if ($classname === '') {
+			unset($classes[$key]);
 		}
 	}
-	$class = count( $classes ) === 0 ? '' : ' class="' . implode( ' ', $classes ) . '"';
+	$class = count($classes) === 0 ? '' : ' class="' . implode(' ', $classes) . '"';
 
 	// wrap the output?
-	if ( (bool) $wrap ) {
+	if ((bool) $wrap) {
 		$content = '<p' . $id . $class . '>' . $content . '</p>';
 	}
 
-	$content = apply_filters( 'humanstxt_shortcode_output', $content, $attributes );
-    $content = filter_var( $content, FILTER_UNSAFE_RAW );
-    $content = false !== $content ? $content : '';
-    return $content;
+	$content = apply_filters('humanstxt_shortcode_output', $content, $attributes);
+	$content = filter_var($content, FILTER_UNSAFE_RAW);
+	$content = false !== $content ? $content : '';
+	return $content;
 }
 
 /**
  * @param array<string> $matches
  * @return string
  */
-function _humanstxt_antispambot_function( array $matches ): string {
-	return antispambot( $matches[0] );
+function _humanstxt_antispambot_function(array $matches): string
+{
+	return antispambot($matches[0]);
 }
 
 /**
  * Loads the plugin text-domain, if not already loaded.
  */
-function humanstxt_load_textdomain(): void {
-	if ( ! is_textdomain_loaded( 'humanstxt' ) ) {
-		load_plugin_textdomain( 'humanstxt', false, 'humanstxt/languages' );
+function humanstxt_load_textdomain(): void
+{
+	if (! is_textdomain_loaded('humanstxt')) {
+		load_plugin_textdomain('humanstxt', false, 'humanstxt/languages');
 	}
 }
 
@@ -384,22 +398,22 @@ function humanstxt_load_textdomain(): void {
  * @global $humanstxt_options
  * @global $humanstxt_defaults
  */
-function humanstxt_load_options(): void {
+function humanstxt_load_options(): void
+{
 	global $humanstxt_options;
-    /** @var array<int,string> $humanstxt_defaults */
-    global $humanstxt_defaults;
+	/** @var array<int,string> $humanstxt_defaults */
+	global $humanstxt_defaults;
 
 	// already loaded?
-	if ( is_null( $humanstxt_options ) ) {
-		$humanstxt_options = get_option( 'humanstxt_options' ) !== false ? get_option( 'humanstxt_options' ) : array();
-		$humanstxt_options = is_array( $humanstxt_options ) ? $humanstxt_options : array();
-			// populate with defaults options if missing...
-			foreach ( $humanstxt_defaults as $option => $value ) {
-				if ( array_key_exists( $option, $humanstxt_options ) === false ) {
-					$humanstxt_options[ $option ] = $value;
-				}
+	if (is_null($humanstxt_options)) {
+		$humanstxt_options = get_option('humanstxt_options') !== false ? get_option('humanstxt_options') : array();
+		$humanstxt_options = is_array($humanstxt_options) ? $humanstxt_options : array();
+		// populate with defaults options if missing...
+		foreach ($humanstxt_defaults as $option => $value) {
+			if (array_key_exists($option, $humanstxt_options) === false) {
+				$humanstxt_options[$option] = $value;
 			}
-		
+		}
 	}
 }
 
@@ -412,12 +426,13 @@ function humanstxt_load_options(): void {
  * @param string $option Name of the option.
  * @return mixed|null Plugin option value
  */
-function humanstxt_option( string $option ): mixed {
-    /** @var array<string> $humanstxt_options */
+function humanstxt_option(string $option): mixed
+{
+	/** @var array<string> $humanstxt_options */
 	global $humanstxt_options;
 
 	humanstxt_load_options();
-	return isset( $humanstxt_options[ $option ] ) ? $humanstxt_options[ $option ] : null;
+	return isset($humanstxt_options[$option]) ? $humanstxt_options[$option] : null;
 }
 
 /**
@@ -426,19 +441,20 @@ function humanstxt_option( string $option ): mixed {
  *
  * @return string $content
  */
-function humanstxt_content(): string {
-	$content = get_option( 'humanstxt_content' );
+function humanstxt_content(): string
+{
+	$content = get_option('humanstxt_content');
 
 	// add option if missing
-	if ( $content === false ) {
+	if ($content === false) {
 		$content = humanstxt_default_content();
-		add_option( 'humanstxt_content', $content, '', false );
+		add_option('humanstxt_content', $content, '', false);
 	}
 
-	$content = apply_filters( 'humanstxt_content', $content );
-    $content = filter_var( $content, FILTER_UNSAFE_RAW );
-    $content = false !== $content ? $content : '';
-    return $content;
+	$content = apply_filters('humanstxt_content', $content);
+	$content = filter_var($content, FILTER_UNSAFE_RAW);
+	$content = false !== $content ? $content : '';
+	return $content;
 }
 
 /**
@@ -449,9 +465,10 @@ function humanstxt_content(): string {
  * @param string $string String to be normalized
  * @return string Normalized string
  */
-function humanstxt_content_normalize( string $string ): string {
-	$string = str_replace( "\r\n", "\n", $string );
-	$string = str_replace( "\r", "\n", $string );
+function humanstxt_content_normalize(string $string): string
+{
+	$string = str_replace("\r\n", "\n", $string);
+	$string = str_replace("\r", "\n", $string);
 	return $string;
 }
 
@@ -464,47 +481,48 @@ function humanstxt_content_normalize( string $string ): string {
  *
  * @return list<array{date: int, user: int, content: string}> Revisions of the humans.txt file
  */
-function humanstxt_revisions(): array|false {
+function humanstxt_revisions(): array|false
+{
 
-	$revision_amount = apply_filters( 'humanstxt_max_revisions', HUMANSTXT_MAX_REVISIONS );
-	$revision_amount = filter_var( $revision_amount, FILTER_VALIDATE_INT );
+	$revision_amount = apply_filters('humanstxt_max_revisions', HUMANSTXT_MAX_REVISIONS);
+	$revision_amount = filter_var($revision_amount, FILTER_VALIDATE_INT);
 	$revision_amount = false !== $revision_amount ? $revision_amount : HUMANSTXT_MAX_REVISIONS;
 
 	// are revisions disabled?
-	if ( $revision_amount < 1 ) {
+	if ($revision_amount < 1) {
 		return false;
 	}
 
-	$revisions = get_option( 'humanstxt_revisions' );
+	$revisions = get_option('humanstxt_revisions');
 
-  if  ( is_array($revisions) ) {
+	if (is_array($revisions)) {
 		$result = array();
-		foreach ( $revisions as $key => $revision ) {
-			if ( false !== is_array( $revision ) ) {
-				$date = filter_var( $revision['date'], FILTER_VALIDATE_INT );
-				$date = false !== $date ? $date : current_time( 'timestamp' );
-				$user = filter_var( $revision['user'], FILTER_VALIDATE_INT );
+		foreach ($revisions as $key => $revision) {
+			if (false !== is_array($revision)) {
+				$date = filter_var($revision['date'], FILTER_VALIDATE_INT);
+				$date = false !== $date ? $date : current_time('timestamp');
+				$user = filter_var($revision['user'], FILTER_VALIDATE_INT);
 				$user = false !== $user ? $user : 0;
-				$content = filter_var( $revision['content'], FILTER_DEFAULT );
+				$content = filter_var($revision['content'], FILTER_DEFAULT);
 				$content = false !== $content ? $content : '';
 				$result[] = array(
 					'date' => $date,
 					'user' => $user,
-					'content' => $content,	
+					'content' => $content,
 				);
 			}
 		}
-		return $result; 
+		return $result;
 	}
 
 	$revisions = array(
 		array(
-			'date'    => current_time( 'timestamp' ),
+			'date'    => current_time('timestamp'),
 			'user'    => 0,
 			'content' => humanstxt_content(),
 		),
 	);
-	add_option( 'humanstxt_revisions', $revisions, '', false );
+	add_option('humanstxt_revisions', $revisions, '', false);
 
 	return $revisions;
 }
@@ -518,28 +536,29 @@ function humanstxt_revisions(): array|false {
  *
  * @param string $content Revisions content
  */
-function humanstxt_add_revision( string $content ): void {
+function humanstxt_add_revision(string $content): void
+{
 	$current_user = wp_get_current_user();
 	$revisions    = humanstxt_revisions();
 
-	if ( ! is_array( $revisions ) ) {
+	if (! is_array($revisions)) {
 		$revisions = array();
 	}
 
 	$revisions[] = array(
-		'date'    => current_time( 'timestamp' ),
+		'date'    => current_time('timestamp'),
 		'user'    => $current_user->ID,
 		'content' => $content,
 	);
 
 	// limit amount of revisions
-	$keys       = array_slice( array_keys( $revisions ), -abs( HUMANSTXT_MAX_REVISIONS ), count( $revisions ) );
+	$keys       = array_slice(array_keys($revisions), -abs(HUMANSTXT_MAX_REVISIONS), count($revisions));
 	$_revisions = array();
-	foreach ( $keys as $key ) {
-		$_revisions[ $key ] = $revisions[ $key ];
+	foreach ($keys as $key) {
+		$_revisions[$key] = $revisions[$key];
 	}
 
-	update_option( 'humanstxt_revisions', $_revisions );
+	update_option('humanstxt_revisions', $_revisions);
 }
 
 /**
@@ -548,26 +567,27 @@ function humanstxt_add_revision( string $content ): void {
  * @param string $string String in which content-variables should be replaced.
  * @return string Given string with replaced content-variables.
  */
-function humanstxt_replace_variables( string $string ): string {
+function humanstxt_replace_variables(string $string): string
+{
 	$variables = humanstxt_valid_variables();
 
-	foreach ( $variables as $variable ) {
+	foreach ($variables as $variable) {
 
 		// 1 = english; 2 = translated varname
-		$varnames = array( '$' . $variable[1] . '$', '$' . $variable[2] . '$' );
+		$varnames = array('$' . $variable[1] . '$', '$' . $variable[2] . '$');
 
 		// does one of the variables occur in the string?
-		if ( stripos( $string, $varnames[0] ) !== false || stripos( $string, $varnames[1] ) !== false ) {
-            if ( ! is_callable( $variable[3] ) ) {
-                continue;
-            }
-            $result = @call_user_func( $variable[3] );
-            $result = filter_var( $result, FILTER_UNSAFE_RAW );
-            $result = false !== $result ? $result : '';
+		if (stripos($string, $varnames[0]) !== false || stripos($string, $varnames[1]) !== false) {
+			if (! is_callable($variable[3])) {
+				continue;
+			}
+			$result = @call_user_func($variable[3]);
+			$result = filter_var($result, FILTER_UNSAFE_RAW);
+			$result = false !== $result ? $result : '';
 			// do we have a valid callback result?
-			if ( function_exists( $variable[3] ) && (bool) $result  !== false ) {
+			if (function_exists($variable[3]) && (bool) $result  !== false) {
 				// replace all occurrences of the variables with callback result
-				$string = str_ireplace( $varnames, $result, $string );
+				$string = str_ireplace($varnames, $result, $string);
 			}
 		}
 	}
@@ -585,40 +605,41 @@ function humanstxt_replace_variables( string $string ): string {
  *
  * @return array<int,array<bool|string>> $variables Default content-variables.
  */
-function humanstxt_variables(): array {
+function humanstxt_variables(): array
+{
 	humanstxt_load_textdomain();
 	require_once HUMANSTXT_PLUGIN_PATH . '/callbacks.php';
 
 	$variables   = array();
-	$variables[] = array( 'wordpress', 'wp-title', /* translators: variable name for the site/blog name (title) */ __( 'wp-title', 'humanstxt' ), 'humanstxt_callback_wpblogname', __( 'Name (title) of site/blog', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-tagline', /* translators: variable name for the site/blog tagline (description) */ __( 'wp-tagline', 'humanstxt' ), 'humanstxt_callback_wptagline', __( 'Tagline (description) of site/blog', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-posts', /* translators: variable name for the number of published posts */ __( 'wp-posts', 'humanstxt' ), 'humanstxt_callback_wpposts', __( 'Number of published posts', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-pages', /* translators: variable name for the number of published pages */ __( 'wp-pages', 'humanstxt' ), 'humanstxt_callback_wppages', __( 'Number of published pages', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-authors', /* translators: variable name for the author list */ __( 'wp-authors', 'humanstxt' ), 'humanstxt_callback_wpauthors', __( 'Active authors and their contact details', 'humanstxt' ), false );
-	$variables[] = array( 'wordpress', 'wp-lastupdate', /* translators: variable name for the "last modified" timestamp */ __( 'wp-lastupdate', 'humanstxt' ), 'humanstxt_callback_lastupdate', __( 'Date of last modified post/page', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-language', /* translators: variable name for WordPress languages(s) */ __( 'wp-language', 'humanstxt' ), 'humanstxt_callback_wplanguage', __( 'WordPress language(s)', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-timezone', /* translators: variable name for WordPress timezone */ __( 'wp-timezone', 'humanstxt' ), 'humanstxt_callback_wptimezone', __( 'WordPress timezone', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-version', /* translators: variable name for the installed WordPress version */ __( 'wp-version', 'humanstxt' ), 'humanstxt_callback_wpversion', __( 'Installed WordPress version', 'humanstxt' ) );
-	$variables[] = array( 'wordpress', 'wp-charset', /* translators: variable name for the encoding (charset) used by WordPress */ __( 'wp-charset', 'humanstxt' ), 'humanstxt_callback_wpcharset', __( 'Encoding used for pages and feeds', 'humanstxt' ) );
+	$variables[] = array('wordpress', 'wp-title', /* translators: variable name for the site/blog name (title) */ __('wp-title', 'humanstxt'), 'humanstxt_callback_wpblogname', __('Name (title) of site/blog', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-tagline', /* translators: variable name for the site/blog tagline (description) */ __('wp-tagline', 'humanstxt'), 'humanstxt_callback_wptagline', __('Tagline (description) of site/blog', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-posts', /* translators: variable name for the number of published posts */ __('wp-posts', 'humanstxt'), 'humanstxt_callback_wpposts', __('Number of published posts', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-pages', /* translators: variable name for the number of published pages */ __('wp-pages', 'humanstxt'), 'humanstxt_callback_wppages', __('Number of published pages', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-authors', /* translators: variable name for the author list */ __('wp-authors', 'humanstxt'), 'humanstxt_callback_wpauthors', __('Active authors and their contact details', 'humanstxt'), false);
+	$variables[] = array('wordpress', 'wp-lastupdate', /* translators: variable name for the "last modified" timestamp */ __('wp-lastupdate', 'humanstxt'), 'humanstxt_callback_lastupdate', __('Date of last modified post/page', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-language', /* translators: variable name for WordPress languages(s) */ __('wp-language', 'humanstxt'), 'humanstxt_callback_wplanguage', __('WordPress language(s)', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-timezone', /* translators: variable name for WordPress timezone */ __('wp-timezone', 'humanstxt'), 'humanstxt_callback_wptimezone', __('WordPress timezone', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-version', /* translators: variable name for the installed WordPress version */ __('wp-version', 'humanstxt'), 'humanstxt_callback_wpversion', __('Installed WordPress version', 'humanstxt'));
+	$variables[] = array('wordpress', 'wp-charset', /* translators: variable name for the encoding (charset) used by WordPress */ __('wp-charset', 'humanstxt'), 'humanstxt_callback_wpcharset', __('Encoding used for pages and feeds', 'humanstxt'));
 
-	$variables[] = array( 'server', 'server-timezone', /* translators: variable name for server timezone */ __( 'server-timezone', 'humanstxt' ), 'humanstxt_callback_timezone', __( 'Server timezone', 'humanstxt' ) );
-	$variables[] = array( 'server', 'server-ip', /* translators: variable name for server ip address */ __( 'server-ip', 'humanstxt' ), 'humanstxt_callback_ip', __( 'Server IP address', 'humanstxt' ) );
-	$variables[] = array( 'server', 'server-os', /* translators: variable name for operating system name */ __( 'server-os', 'humanstxt' ), 'humanstxt_callback_os', __( 'Operating system name', 'humanstxt' ) );
-	$variables[] = array( 'server', 'server-identity', /* translators: variable name server identification string  */ __( 'server-identity', 'humanstxt' ), 'humanstxt_callback_server', __( 'Server identification', 'humanstxt' ) );
-	$variables[] = array( 'server', 'php-version', /* translators: variable name for php parser version */ __( 'php-version', 'humanstxt' ), 'humanstxt_callback_phpversion', __( 'PHP parser version', 'humanstxt' ) );
-	$variables[] = array( 'server', 'zend-version', /* translators: variable name for zend engine version */ __( 'zend-version', 'humanstxt' ), 'humanstxt_callback_zendversion', __( 'Zend Engine version', 'humanstxt' ) );
-	$variables[] = array( 'server', 'mysql-version', /* translators: variable name for MySQL server version */ __( 'mysql-version', 'humanstxt' ), 'humanstxt_callback_mysqlversion', __( 'MySQL server version', 'humanstxt' ) );
+	$variables[] = array('server', 'server-timezone', /* translators: variable name for server timezone */ __('server-timezone', 'humanstxt'), 'humanstxt_callback_timezone', __('Server timezone', 'humanstxt'));
+	$variables[] = array('server', 'server-ip', /* translators: variable name for server ip address */ __('server-ip', 'humanstxt'), 'humanstxt_callback_ip', __('Server IP address', 'humanstxt'));
+	$variables[] = array('server', 'server-os', /* translators: variable name for operating system name */ __('server-os', 'humanstxt'), 'humanstxt_callback_os', __('Operating system name', 'humanstxt'));
+	$variables[] = array('server', 'server-identity', /* translators: variable name server identification string  */ __('server-identity', 'humanstxt'), 'humanstxt_callback_server', __('Server identification', 'humanstxt'));
+	$variables[] = array('server', 'php-version', /* translators: variable name for php parser version */ __('php-version', 'humanstxt'), 'humanstxt_callback_phpversion', __('PHP parser version', 'humanstxt'));
+	$variables[] = array('server', 'zend-version', /* translators: variable name for zend engine version */ __('zend-version', 'humanstxt'), 'humanstxt_callback_zendversion', __('Zend Engine version', 'humanstxt'));
+	$variables[] = array('server', 'mysql-version', /* translators: variable name for MySQL server version */ __('mysql-version', 'humanstxt'), 'humanstxt_callback_mysqlversion', __('MySQL server version', 'humanstxt'));
 
-	$variables[] = array( 'addons', 'wp-plugins', /* translators: variable name for activated WordPress plugins */ __( 'wp-plugins', 'humanstxt' ), 'humanstxt_callback_wpplugins', __( 'Activated WordPress plugins', 'humanstxt' ) );
-	$variables[] = array( 'addons', 'wp-theme', /* translators: variable name for the summary of the active WordPress theme */ __( 'wp-theme', 'humanstxt' ), 'humanstxt_callback_wptheme', __( 'Summary of the active WordPress theme', 'humanstxt' ) );
-	$variables[] = array( 'addons', 'wp-theme-name', /* translators: variable name for the name of the active WordPress theme */ __( 'wp-theme-name', 'humanstxt' ), 'humanstxt_callback_wptheme_name', __( 'Name of the active theme', 'humanstxt' ) );
-	$variables[] = array( 'addons', 'wp-theme-version', /* translators: variable name for the version of the active WordPress theme */ __( 'wp-theme-version', 'humanstxt' ), 'humanstxt_callback_wptheme_version', __( 'Version of the active theme', 'humanstxt' ) );
-	$variables[] = array( 'addons', 'wp-theme-author', /* translators: variable name for the author name of the active WordPress theme */ __( 'wp-theme-author', 'humanstxt' ), 'humanstxt_callback_wptheme_author', __( 'Author name of the active theme', 'humanstxt' ) );
-	$variables[] = array( 'addons', 'wp-theme-author-link', /* translators: variable name for the author link of the active WordPress theme */ __( 'wp-theme-author-link', 'humanstxt' ), 'humanstxt_callback_wptheme_author_link', __( 'Author link of the active theme', 'humanstxt' ) );
+	$variables[] = array('addons', 'wp-plugins', /* translators: variable name for activated WordPress plugins */ __('wp-plugins', 'humanstxt'), 'humanstxt_callback_wpplugins', __('Activated WordPress plugins', 'humanstxt'));
+	$variables[] = array('addons', 'wp-theme', /* translators: variable name for the summary of the active WordPress theme */ __('wp-theme', 'humanstxt'), 'humanstxt_callback_wptheme', __('Summary of the active WordPress theme', 'humanstxt'));
+	$variables[] = array('addons', 'wp-theme-name', /* translators: variable name for the name of the active WordPress theme */ __('wp-theme-name', 'humanstxt'), 'humanstxt_callback_wptheme_name', __('Name of the active theme', 'humanstxt'));
+	$variables[] = array('addons', 'wp-theme-version', /* translators: variable name for the version of the active WordPress theme */ __('wp-theme-version', 'humanstxt'), 'humanstxt_callback_wptheme_version', __('Version of the active theme', 'humanstxt'));
+	$variables[] = array('addons', 'wp-theme-author', /* translators: variable name for the author name of the active WordPress theme */ __('wp-theme-author', 'humanstxt'), 'humanstxt_callback_wptheme_author', __('Author name of the active theme', 'humanstxt'));
+	$variables[] = array('addons', 'wp-theme-author-link', /* translators: variable name for the author link of the active WordPress theme */ __('wp-theme-author-link', 'humanstxt'), 'humanstxt_callback_wptheme_author_link', __('Author link of the active theme', 'humanstxt'));
 
-    // $variables = apply_filters('humanstxt_variables', $variables);
-    // $variables = filter_var_array( $variables, FILTER_REQUIRE_ARRAY );
-    // $variables = is_array( $variables ) ? $variables : array(array());
+	// $variables = apply_filters('humanstxt_variables', $variables);
+	// $variables = filter_var_array( $variables, FILTER_REQUIRE_ARRAY );
+	// $variables = is_array( $variables ) ? $variables : array(array());
 	return $variables;
 }
 
@@ -627,18 +648,19 @@ function humanstxt_variables(): array {
  *
  * @return array<int,array<bool|string>> $variables Valid content-variables.
  */
-function humanstxt_valid_variables(): array {
+function humanstxt_valid_variables(): array
+{
 	$variables = humanstxt_variables();
 
-	foreach ( $variables as $key => $variable ) {
+	foreach ($variables as $key => $variable) {
 		// delete if variable hasn't enought params
-		if ( count( $variable ) < 5 ) {
-			unset( $variables[ $key ] );
+		if (count($variable) < 5) {
+			unset($variables[$key]);
 			continue;
 		}
 		// delete if variable callback is not a function
-		if ( ! is_string( $variable[3] ) || ! function_exists( $variable[3] ) ) {
-			unset( $variables[ $key ] );
+		if (! is_string($variable[3]) || ! function_exists($variable[3])) {
+			unset($variables[$key]);
 			continue;
 		}
 	}
@@ -653,7 +675,8 @@ function humanstxt_valid_variables(): array {
  *
  * @return string Default humans.txt file content.
  */
-function humanstxt_default_content(): string {
+function humanstxt_default_content(): string
+{
 	humanstxt_load_textdomain();
 
 	/* translators: only translate the text inside angle brackets < > to keep the humans.txt international. if the variable names are translated, you may translate them here too. */
