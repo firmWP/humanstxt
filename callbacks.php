@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Callback functions.
  *
@@ -40,7 +39,8 @@ if ( ! function_exists( 'humanstxt_callback_server' ) ) :
 	 * @return string Value of $_SERVER['SERVER_SOFTWARE']
 	 */
 	function humanstxt_callback_server(): ?string {
-		return isset( $_SERVER['SERVER_SOFTWARE'] ) ? filter_var( $_SERVER['SERVER_SOFTWARE'], FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE ) : null;
+		$sanitized = sanitize_text_field( wp_unslash( key_exists( 'SERVER_SOFTWARE', $_SERVER ) ? $_SERVER['SERVER_SOFTWARE'] : '' ) );
+		return isset( $sanitized ) ? filter_var( $sanitized, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE ) : null;
 	}
 endif;
 
@@ -247,7 +247,11 @@ if ( ! function_exists( 'humanstxt_callback_wp_authors' ) ) :
 
 		$author_ids = array();
 		foreach ( $users as $user ) {
-			/** @var WP_User $user */
+			/**
+			 * A WP_User object.
+			 *
+			 * @var WP_User $user
+			 */
 			$author_ids[] = $user->ID;
 		}
 
@@ -255,7 +259,11 @@ if ( ! function_exists( 'humanstxt_callback_wp_authors' ) ) :
 		$format        = "\t" . '%1$s: %2$s' . "\n";
 
 		foreach ( $users as $user ) {
-			/** @var WP_User $user */
+			/**
+			 * A WP_User object.
+			 *
+			 * @var WP_User $user
+			 */
 			if ( 0 < $authors_posts[ $user->ID ] ) {
 				$contact  = empty( $user->user_url ) ? $user->user_email : $user->user_url;
 				$authors .= sprintf( $format, $user->display_name, $contact );
