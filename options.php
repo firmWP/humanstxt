@@ -1,6 +1,16 @@
 <?php
 
 /**
+ * Humans TXT Options Page
+ *
+ * This file contains the code for the Humans TXT options page
+ * as well as all related admin actions, filters and hooks.
+ *
+ * @package HumansTXT
+ * @subpackage Options
+ */
+
+/**
  * URL to Humans TXT plugin folder.
  */
 define( 'HUMANSTXT_PLUGIN_URL', plugin_dir_url( HUMANSTXT_PLUGIN_FILE ) );
@@ -105,7 +115,7 @@ function humanstxt_uninstall(): void {
 function humanstxt_version_warning(): void {
 	if ( ! humanstxt_is_wp( HUMANSTXT_VERSION_REQUIRED ) ) {
 		$update_link = ' <a href="' . admin_url( 'update-core.php' ) . '">' . __( 'Please update your WordPress installation.', 'humanstxt' ) . '</a>';
-		print '<div id="humanstxt-warning" class="updated fade"><p><strong>'
+		echo '<div id="humanstxt-warning" class="updated fade"><p><strong>'
 			. sprintf( __( 'Humans TXT %1$s requires WordPress %2$s or higher.', 'humanstxt' ), HUMANSTXT_VERSION, HUMANSTXT_VERSION_REQUIRED )
 			. '</strong>' . ( current_user_can( 'update_core' ) ? $update_link : '' )
 			. '</p></div>';
@@ -353,7 +363,7 @@ function humanstxt_import_file(): void {
  */
 function humanstxt_plugin_notice( string $plugin_file, array $plugin_data, string $status ): void {
 	if ( is_plugin_active( $plugin_file ) ) {
-		print '<tr class="plugin-update-tr"><td colspan="3" class="plugin-update colspanchange"><div class="update-message">' . sprintf( __( 'Humans TXT includes the functionality of %1$s. Please deactivate %1$s to avoid plugin conflicts.', 'humanstxt' ), '<em>' . $plugin_data['Name'] . '</em>' ) . '</div></td></tr>';
+		echo '<tr class="plugin-update-tr"><td colspan="3" class="plugin-update colspanchange"><div class="update-message">' . sprintf( __( 'Humans TXT includes the functionality of %1$s. Please deactivate %1$s to avoid plugin conflicts.', 'humanstxt' ), '<em>' . $plugin_data['Name'] . '</em>' ) . '</div></td></tr>';
 	}
 }
 
@@ -397,9 +407,9 @@ function humanstxt_ajax_preview(): void {
 		$content = filter_var( $content, FILTER_UNSAFE_RAW );
 		$content = false === $content ? '' : $content;
 		$content = esc_html( $content );
-		print sprintf( '<pre>%s</pre>', $content );
+		printf( '<pre>%s</pre>', $content );
 	} else {
-		print __( 'An error has occurred. Please reload the page and try again.' );
+		echo __( 'An error has occurred. Please reload the page and try again.' );
 	}
 
 	exit;
@@ -640,7 +650,7 @@ function humanstxt_revisions_page(): void {
 						__( 'Revision created on %s', 'humanstxt' ),
 						date_i18n(
 							_x( 'j F, Y @ G:i:s', 'revision date format' ),
-							intval( $revisions[ $show_revision ]['date'] )
+							intval( $revisions[ $show_revision ]['date'] ),
 						)
 					);
 			?>

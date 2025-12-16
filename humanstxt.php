@@ -1,17 +1,24 @@
 <?php
-/*
-Plugin Name: Humans TXT
-Plugin URI: http://github.com/firmWP/humanstxt/
-Description: Credit the people behind your website with the <strong>humans.txt</strong> file. Editable directly within WordPress.
-Text Domain: humanstxt
-Domain Path: /languages
-Version: 20.25.12
-Maintainer: Daniel Șerbănescu
-Original Author: Till Krüss
-Original Author URI: http://till.kruss.me/
-License: GPLv3
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
-*/
+/**
+ * Humans TXT Plugin
+ *
+ * This file contains the main code for the Humans TXT plugin.
+ *
+ * Plugin Name: Humans TXT
+ * Plugin URI: http://github.com/firmWP/humanstxt/
+ * Description: Credit the people behind your website with the <strong>humans.txt</strong> file. Editable directly within WordPress.
+ * Text Domain: humanstxt
+ * Domain Path: /languages
+ * Version: 20.25.12
+ * Maintainer: Daniel Șerbănescu
+ * Original Author: Till Krüss
+ * Original Author URI: http://till.kruss.me/
+ * License: GPLv3
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * @package HumansTXT
+ * @subpackage Main
+ */
 
 /**
  * Humans TXT plugin version.
@@ -67,10 +74,12 @@ if ( is_admin() ) {
 }
 
 /**
- * Echos the content of the virtual humans.txt file.
+ * Outputs the content of the virtual humans.txt file.
+ * Note: No escaping is done here because of the plain text content type.
  */
 function humanstxt(): void {
-	print get_humanstxt();
+	// phpcs:ignore WordPress.Security.EscapeOutput
+	echo get_humanstxt();
 }
 
 /**
@@ -87,17 +96,27 @@ function get_humanstxt(): string {
 }
 
 /**
- * Echos a XHTML-conform author link tag.
+ * Echos a HTML-conform author link tag.
  */
 function humanstxt_author_tag(): void {
-	print get_humanstxt_author_tag();
+	// Escape allowed attributes only then output.
+	echo wp_kses(
+		get_humanstxt_author_tag(),
+		array(
+			'link' => array(
+				'rel'  => array(),
+				'type' => array(),
+				'href' => array(),
+			),
+		)
+	);
 }
 
 /**
- * Returns a XHTML-conform author link tag, pointed to
+ * Returns a HTML-conform author link tag, pointed to
  * the humans.txt URL.
  *
- * @return string XHTML-conform author link tag
+ * @return string HTML-conform author link tag
  */
 function get_humanstxt_author_tag(): string {
 	$html_tag   = sprintf( '<link rel="author" type="text/plain" href="%s" />', home_url( 'humans.txt' ) );
@@ -132,7 +151,11 @@ function humanstxt_exists(): bool {
  * @global $wp_rewrite
  */
 function humanstxt_init(): void {
-	/** @var WP_Rewrite $wp_rewrite */
+	/**
+	 *  The rewrite object.
+	 *
+	 *  @var WP_Rewrite $wp_rewrite
+	 */
 	global $wp_rewrite;
 
 	$rewrite_rules = is_array( get_option( 'rewrite_rules' ) ) ? get_option( 'rewrite_rules' ) : array();
@@ -141,29 +164,27 @@ function humanstxt_init(): void {
 		add_filter( 'query_vars', 'humanstxt_query_vars' );
 		add_rewrite_rule( 'humans\.txt$', $wp_rewrite->index . '?humans=1', 'top' );
 
-		// register author link tag action if enabled
+		// Register author link tag action if enabled.
 		if ( humanstxt_option( 'author_tag' ) ) {
 			add_action( 'wp_head', 'humanstxt_author_tag', 1 );
 		}
 
-		// flush rewrite rules if ours is missing
+		// Flush rewrite rules if ours is missing.
 		if ( ! array_key_exists( 'humans\.txt$', $rewrite_rules ) ) {
 			flush_rewrite_rules( false );
 		}
-	} else {
-
-		// flush rewrite rules if ours shouldn't be there
-		if ( array_key_exists( 'humans\.txt$', $rewrite_rules ) ) {
+		// Flush rewrite rules if ours shouldn't be there.
+	} elseif ( array_key_exists( 'humans\.txt$', $rewrite_rules ) ) {
 			flush_rewrite_rules( false );
-		}
 	}
 }
 
 /**
+ * Add query variables to the list of recognized query variables.
  *
- *
- * @param array<string> $qv
+ * @param array<string> $qv Query variables array.
  * @return array<string>
+ *  Modified query variables array.
  */
 function humanstxt_query_vars( array $qv ): array {
 	$qv[] = 'humans';
@@ -189,8 +210,9 @@ function humanstxt_template_redirect(): void {
 function humanstxt_do_humans(): void {
 	header( 'Content-Type: text/plain; charset=utf-8' );
 	do_action( 'do_humanstxt' );
-
-	print get_humanstxt();
+	// Do not escape the output, as it's plain text.
+  // phpcs:ignore WordPress.Security.EscapeOutput
+	echo get_humanstxt();
 }
 
 /**
@@ -206,19 +228,23 @@ function humanstxt_load_textdomain(): void {
  * Loads plugin options from database and sets missing
  * options to their default values.
  *
- * @global $humanstxt_options
- * @global $humanstxt_defaults
+ * @global $humanstxt_options Plugin options.
+ * @global $humanstxt_defaults Plugin default options.
  */
 function humanstxt_load_options(): void {
 	global $humanstxt_options;
-	/** @var array<int,string> $humanstxt_defaults */
+	/**
+	 * Plugin default options.
+	 *
+	 * @var array<int,string> $humanstxt_defaults
+	 */
 	global $humanstxt_defaults;
 
-	// already loaded?
+	// Check if options are not already loaded.
 	if ( is_null( $humanstxt_options ) ) {
 		$humanstxt_options = get_option( 'humanstxt_options' ) !== false ? get_option( 'humanstxt_options' ) : array();
 		$humanstxt_options = is_array( $humanstxt_options ) ? $humanstxt_options : array();
-		// populate with defaults options if missing...
+		// Populate with defaults options if missing.
 		foreach ( $humanstxt_defaults as $option => $value ) {
 			if ( array_key_exists( $option, $humanstxt_options ) === false ) {
 				$humanstxt_options[ $option ] = $value;
@@ -234,10 +260,14 @@ function humanstxt_load_options(): void {
  * @global $humanstxt_options
  *
  * @param string $option Name of the option.
- * @return mixed|null Plugin option value
+ * @return mixed|null Plugin option value.
  */
 function humanstxt_option( string $option ): mixed {
-	/** @var array<string> $humanstxt_options */
+	/**
+	 * Plugin options.
+	 *
+	 * @var array<string> $humanstxt_options
+	 * */
 	global $humanstxt_options;
 
 	humanstxt_load_options();
@@ -253,8 +283,8 @@ function humanstxt_option( string $option ): mixed {
 function humanstxt_content(): string {
 	$content = get_option( 'humanstxt_content' );
 
-	// add option if missing
-	if ( $content === false ) {
+	// Add option if missing.
+	if ( false === $content ) {
 		$content = humanstxt_default_content();
 		add_option( 'humanstxt_content', $content, '', false );
 	}
@@ -266,15 +296,15 @@ function humanstxt_content(): string {
 }
 
 /**
- * Normalizes the line endings of the given $string.
+ * Normalizes the line endings of the given $content.
  *
- * @param string $string String to be normalized
- * @return string Normalized string
+ * @param string $content String to be normalized.
+ * @return string Normalized string.
  */
-function humanstxt_content_normalize( string $string ): string {
-	$string = str_replace( "\r\n", "\n", $string );
-	$string = str_replace( "\r", "\n", $string );
-	return $string;
+function humanstxt_content_normalize( string $content ): string {
+	$content = str_replace( "\r\n", "\n", $content );
+	$content = str_replace( "\r", "\n", $content );
+	return $content;
 }
 
 /**
@@ -295,6 +325,9 @@ function humanstxt_revisions(): array|false {
 		return false;
 	}
 
+	$local_time   = current_datetime();
+	$current_time = $local_time->getTimestamp() + $local_time->getOffset();
+
 	$revisions = get_option( 'humanstxt_revisions' );
 
 	if ( is_array( $revisions ) ) {
@@ -302,7 +335,7 @@ function humanstxt_revisions(): array|false {
 		foreach ( $revisions as $key => $revision ) {
 			if ( false !== is_array( $revision ) ) {
 				$date     = filter_var( $revision['date'], FILTER_VALIDATE_INT );
-				$date     = false !== $date ? $date : current_time( 'timestamp' );
+				$date     = false !== $date ? $date : $current_time;
 				$user     = filter_var( $revision['user'], FILTER_VALIDATE_INT );
 				$user     = false !== $user ? $user : 0;
 				$content  = filter_var( $revision['content'], FILTER_DEFAULT );
@@ -319,7 +352,7 @@ function humanstxt_revisions(): array|false {
 
 	$revisions = array(
 		array(
-			'date'    => current_time( 'timestamp' ),
+			'date'    => $current_time,
 			'user'    => 0,
 			'content' => humanstxt_content(),
 		),
@@ -334,7 +367,7 @@ function humanstxt_revisions(): array|false {
  * Ensures that only the last 50 revisions are stored.
  * Limit can be changed with the 'humanstxt_max_revisions' filter.
  *
- * @param string $content Revisions content
+ * @param string $content Revisions content.
  */
 function humanstxt_add_revision( string $content ): void {
 	$current_user = wp_get_current_user();
@@ -344,13 +377,16 @@ function humanstxt_add_revision( string $content ): void {
 		$revisions = array();
 	}
 
+	$local_time   = current_datetime();
+	$current_time = $local_time->getTimestamp() + $local_time->getOffset();
+
 	$revisions[] = array(
-		'date'    => current_time( 'timestamp' ),
+		'date'    => $current_time,
 		'user'    => $current_user->ID,
 		'content' => $content,
 	);
 
-	// limit amount of revisions
+	// Limit amount of revisions.
 	$keys       = array_slice( array_keys( $revisions ), -abs( HUMANSTXT_MAX_REVISIONS ), count( $revisions ) );
 	$_revisions = array();
 	foreach ( $keys as $key ) {
@@ -361,12 +397,12 @@ function humanstxt_add_revision( string $content ): void {
 }
 
 /**
- * Replaces all valid content-variables in given string and returns it.
+ * Replaces all valid content-variables in given string input and returns it.
  *
- * @param string $string String in which content-variables should be replaced.
- * @return string Given string with replaced content-variables.
+ * @param string $input String in which content-variables should be replaced.
+ * @return string Given input string with replaced content-variables.
  */
-function humanstxt_replace_variables( string $string ): string {
+function humanstxt_replace_variables( string $input ): string {
 	$variables = humanstxt_valid_variables();
 
 	foreach ( $variables as $variable ) {
@@ -379,19 +415,19 @@ function humanstxt_replace_variables( string $string ): string {
 		$var_names = array( '$' . $tag . '$', '$' . $localized_tag . '$' );
 
 		// does one of the variables occur in the string?
-		if ( stripos( $string, $tag ) !== false || stripos( $string, $localized_tag ) !== false ) {
+		if ( stripos( $input, $tag ) !== false || stripos( $input, $localized_tag ) !== false ) {
 			if ( ! is_callable( $callback ) ) {
 				continue;
 			}
 			$result = call_user_func( $callback );
 			$result = filter_var( $result, FILTER_UNSAFE_RAW );
 			$result = false !== $result ? $result : '';
-			// replace all occurrences of the variables with callback result
-			$string = str_ireplace( $var_names, $result, $string );
+			// Replace all occurrences of the variables with callback result.
+			$input = str_ireplace( $var_names, $result, $input );
 		}
 	}
 
-	return $string;
+	return $input;
 }
 
 /**
@@ -588,12 +624,12 @@ function humanstxt_valid_variables(): array {
 	$variables = humanstxt_variables();
 
 	foreach ( $variables as $key => $variable ) {
-		// delete if variable hasn't enough params
+		// Delete if variable does not have enough elements.
 		if ( count( $variable ) < 5 ) {
 			unset( $variables[ $key ] );
 			continue;
 		}
-		// delete if variable callback is not a function
+		// Delete if variable callback is not a function.
 		if ( ! function_exists( $variable[3] ) ) {
 			unset( $variables[ $key ] );
 			continue;
@@ -613,7 +649,13 @@ function humanstxt_valid_variables(): array {
 function humanstxt_default_content(): string {
 	humanstxt_load_textdomain();
 
-	$placeholder = <<<'TEXT'
+	/**
+	 * Translators: only translate the text inside angle brackets < > to keep the humans.txt international.
+	 * If the variable names are translated, you may translate them here too.
+	 */
+	return humanstxt_content_normalize(
+		__(
+			'
 /* the humans responsible & colophon */
 /* humanstxt.org */
 
@@ -637,13 +679,8 @@ function humanstxt_default_content(): string {
 	Language: <English, Klingon, ...>
 	Components: <jQuery, Typekit, Modernizr, ...>
 	IDE: <Coda, Zend Studio, Photoshop, Terminal, ...>
-TEXT;
-
-	/*
-	translators: only translate the text inside angle brackets < > to keep the humans.txt international.
-	If the variable names are translated, you may translate them here too.
-	*/
-	return humanstxt_content_normalize(
-		__( $placeholder, 'humanstxt' )
+			',
+			'humanstxt'
+		)
 	);
 }
