@@ -1,14 +1,20 @@
+/**
+ * Frontend functions for Humans.txt WordPress plugin options page.
+ *
+ * @package humanstxt
+ */
+
 jQuery( document ).ready(
 	function ($) {
 
-		// enable auto-grow on humans.txt textarea
+		// eEnable auto-grow on humans.txt textarea.
 		var $humanstxtEditor = $( '#humanstxt_content' );
 		$humanstxtEditor.humansAutoGrow();
 
-		// open external links in new tab
+		// Open external links in new tab.
 		$( '#wpbody-content a[rel*="external"]' ).attr( 'target', '_tab' );
 
-		// register slider for variable groups
+		// Register slider for variable groups.
 		$( '#humanstxt-vars ul h5' ).hoverIntent(
 			{
 				out: function () {},
@@ -21,10 +27,10 @@ jQuery( document ).ready(
 			}
 		);
 
-		// register custom tooltips for variable previews
+		// Register custom tooltips for variable previews.
 		$( '#humanstxt-vars ul ul li' ).humansTooltip();
 
-		// make star rating clickable if the metabox is displayed
+		// Make star rating clickable if the metabox is displayed.
 		var $humanstxtRateIt = $( '#humanstxt-metabox .text-rateit a' );
 		if ($humanstxtRateIt.length) {
 			$( '#humanstxt-metabox .star-holder, #humanstxt-metabox .text-votes' ).css( 'cursor', 'pointer' ).attr( 'title', $humanstxtRateIt.attr( 'title' ) ).click(
@@ -34,7 +40,7 @@ jQuery( document ).ready(
 			);
 		}
 
-		// register preview button
+		// Register preview button.
 		$( '#humanstxt-editor-wrap .button-preview' ).each(
 			function () {
 				$( this ).data( 'ajax-url', $( this ).attr( 'href' ) ).click(
@@ -48,8 +54,8 @@ jQuery( document ).ready(
 			}
 		);
 
-		// enable tab key support on humans.txt textarea
-		// taken from /wp-admin/js/common.dev.js
+		// Enable tab key support on humans.txt textarea.
+		// Taken from /wp-admin/js/common.dev.js.
 		$humanstxtEditor.keydown(
 			function (e) {
 				if (e.keyCode != 9) {
@@ -92,14 +98,15 @@ jQuery( document ).ready(
 		);
 
 		// hide unnecessary revision compare radio buttons
-		// jQuery adaptation of /wp-includes/js/wp-list-revisions.dev.js
+		// jQuery adaptation of /wp-includes/js/wp-list-revisions.dev.js.
 		var $humanstxtRevisions       = $( '#humanstxt-revisions' );
 		var $humanstxtRevisionsInputs = $humanstxtRevisions.find( 'input' );
 		if ($humanstxtRevisions.length) {
 			$humanstxtRevisions.click(
 				function () {
 					var i, checkCount = 0, side;
-					for (i = 0; i < $humanstxtRevisionsInputs.length; i++) {
+					var inputsLength  = $humanstxtRevisionsInputs.length;
+					for (i = 0; i < inputsLength; i++) {
 						checkCount += $humanstxtRevisionsInputs[i].checked ? 1 : 0;
 						side        = $humanstxtRevisionsInputs[i].getAttribute( 'name' );
 						if ( ! $humanstxtRevisionsInputs[i].checked && ('left' == side && 1 > checkCount || 'right' == side && 1 < checkCount && ( ! $humanstxtRevisionsInputs[i - 1] || ! $humanstxtRevisionsInputs[i - 1].checked)) && ! ($humanstxtRevisionsInputs[i + 1] && $humanstxtRevisionsInputs[i + 1].checked && 'right' == $humanstxtRevisionsInputs[i + 1].getAttribute( 'name' ))) {
@@ -121,7 +128,7 @@ jQuery( document ).ready(
 
 		var isRTL = $( 'body' ).hasClass( 'rtl' );
 
-		// add tooltip div
+		// Add tooltip div.
 		$humanstxtTooltip = $( '#humansTooltip' );
 		if ($humanstxtTooltip.length < 1) {
 			$humanstxtTooltip = $( '<div id="humansTooltip"></div>' ).appendTo( 'body' );
@@ -133,7 +140,7 @@ jQuery( document ).ready(
 				var $element     = jQuery( this );
 				var elementTitle = this.title;
 
-				this.title = ""; // prevent default browser tooltip
+				this.title = ""; // Prevent default browser tooltip.
 
 				$element.hover(
 					function () {
@@ -152,7 +159,7 @@ jQuery( document ).ready(
 				);
 
 				var showTooltip = function () {
-					$humanstxtTooltip.html( elementTitle ); // set tooltip to original title attribute
+					$humanstxtTooltip.html( elementTitle ); // Set tooltip to original title attribute.
 					var elementOffset        = $element.offset();
 					var horizontalAdjustment = isRTL ? $element.width() - $humanstxtTooltip.width() - 5 : -15;
 					$humanstxtTooltip.css(
@@ -169,10 +176,10 @@ jQuery( document ).ready(
 	}
 
 	/**
-	 * MODIFIED Autogrow Textarea Plugin Version v2.0
+	 * MODIFIED Autogrow Textarea Plugin Version v2.0.
 	 * http://www.technoreply.com/autogrow-textarea-plugin-version-2-0
 	 *
-	 * Copyright 2011, Jevin O. Sewaruth
+	 * Copyright 2011, Jevin O. Sewaruth.
 	 *
 	 * Date: March 13, 2011
 	 */
