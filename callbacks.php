@@ -38,9 +38,9 @@ if ( ! function_exists( 'humanstxt_callback_server' ) ) :
 	 *
 	 * @return string Value of $_SERVER['SERVER_SOFTWARE']
 	 */
-	function humanstxt_callback_server(): ?string {
+	function humanstxt_callback_server(): string {
 		$sanitized = sanitize_text_field( wp_unslash( key_exists( 'SERVER_SOFTWARE', $_SERVER ) ? $_SERVER['SERVER_SOFTWARE'] : '' ) );
-		return isset( $sanitized ) ? filter_var( $sanitized, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE ) : null;
+		return filter_var( $sanitized, FILTER_UNSAFE_RAW, FILTER_NULL_ON_FAILURE );
 	}
 endif;
 
