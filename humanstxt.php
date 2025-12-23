@@ -292,6 +292,7 @@ function humanstxt_content(): string {
 	$content = apply_filters( 'humanstxt_content', $content );
 	$content = filter_var( $content, FILTER_UNSAFE_RAW );
 	$content = false !== $content ? $content : '';
+	$content = trim( $content );
 	return $content;
 }
 
@@ -633,6 +634,8 @@ function humanstxt_valid_variables(): array {
 		if ( ! function_exists( $variable[3] ) ) {
 			unset( $variables[ $key ] );
 			continue;
+		} else {
+			$variables[ $key ][3] = call_user_func( $variable[3] );
 		}
 	}
 

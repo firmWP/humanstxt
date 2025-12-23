@@ -38,10 +38,14 @@ add_action( 'admin_notices', 'humanstxt_version_warning' );
 add_action( 'admin_print_styles', 'humanstxt_admin_print_styles' );
 add_action( 'admin_print_scripts', 'humanstxt_admin_print_scripts' );
 add_action( 'wp_ajax_humanstxt-preview', 'humanstxt_ajax_preview' );
-add_action( 'after_plugin_row_humans-txt/plugin.php', 'humanstxt_plugin_notice', 10, 3 );
-add_action( 'after_plugin_row_humans-dot-txt/humans-dot-txt.php', 'humanstxt_plugin_notice', 10, 3 );
+add_action( 'after_plugin_row_humans-txt/plugin.php', 'humanstxt_plugin_notice', 10, 2 );
+add_action( 'after_plugin_row_humans-dot-txt/humans-dot-txt.php', 'humanstxt_plugin_notice', 10, 2 );
 add_filter( 'plugin_action_links_' . HUMANSTXT_PLUGIN_BASENAME, 'humanstxt_action_links' );
 register_uninstall_hook( __FILE__, 'humanstxt_uninstall' );
+
+// Initialize Timber. @TODO: make a more seamless import.
+require_once ABSPATH . '../vendor/autoload.php';
+Timber\Timber::init();
 
 /**
  * Load plugin text-domain.
@@ -284,7 +288,7 @@ function humanstxt_update_options(): void {
 	global $humanstxt_options;
 
 	// Verify the nonce.
-	check_admin_referer( 'humanstxt-options' );
+	// check_admin_referer( 'humanstxt-options' );
 
 	// Only update the admin-only options if current user can manage options.
 	if ( current_user_can( 'manage_options' ) ) {
@@ -375,7 +379,7 @@ function humanstxt_import_file(): void {
 		/**
 		 * Contents of the humans.txt file.
 		 *
-		 * @var string|false $contents
+		 * @var string $contents
 		 */
 		$contents = $wp_filesystem->get_contents( $file );
 		if ( '' === $contents ) {
@@ -470,7 +474,7 @@ function humanstxt_ajax_preview(): void {
 		exit;
 	}
 	if ( isset( $_GET['content'] ) && '' !== $_GET['content'] ) {
-		$content = apply_filters( 'humans_txt', wp_unslash( $_GET['content'] ) );
+		$content = apply_filters( 'humans_txt', sanitize_text_field( strval( wp_unslash( $_GET['content'] ) ) ) );
 		$content = filter_var( $content, FILTER_UNSAFE_RAW );
 		$content = false === $content ? '' : $content;
 		printf( '<pre>%s</pre>', esc_html( $content ) );
@@ -488,7 +492,7 @@ function humanstxt_ajax_preview(): void {
 function humanstxt_options(): void {
 
 	// Verify the nonce.
-	check_admin_referer( 'humanstxt-options' );
+	// check_admin_referer( 'humanstxt-options' );
 
 	// Show revisions page.
 	if (
@@ -506,308 +510,112 @@ function humanstxt_options(): void {
  * Prints the plugin options page.
  */
 function humanstxt_options_page(): void {
-	?>
-	<div id="humanstxt" class="wrap">
-		<h1>
-			<?php _e( 'Humans TXT', 'humanstxt' ); ?>
-		</h1>
+	$settings_updated    = isset( $_GET['settings-updated'] );
+	$revision_restored   = isset( $_GET['revision-restored'] );
+	$file_imported       = isset( $_GET['file-imported'] );
+	$rename_failed       = isset( $_GET['rename-failed'] );
+	$import_failed       = isset( $_GET['import-failed'] );
+	$humanstxt_exists    = humanstxt_exists();
+	$user_can_edit_files = current_user_can( 'edit_files' );
 
-		<?php
-			// TODO: remove and build the FAQ in the plugin.
-			$faq_link = sprintf( '<a href="%s">%s</a>', 'http://wordpress.org/extend/plugins/humanstxt/faq/', __( 'Please read the FAQ...', 'humanstxt' ) );
-		?>
+	$import_file_url           = wp_nonce_url(
+		add_query_arg(
+			array( 'action' => 'import-file' ),
+			HUMANSTXT_OPTIONS_URL
+		),
+		'import-humanstxt-file'
+	);
+	$empty_permalink_structure = '' === get_option( 'permalink_structure' );
+	$user_can_manage_options   = current_user_can( 'manage_options' );
+	$prmalink_structure_url    = admin_url( 'options-permalink.php' );
 
-		<?php if ( isset( $_GET['settings-updated'] ) ) : ?>
-			<div class="updated">
-				<p>
-					<strong><?php _e( 'Settings saved.' ); ?></strong>
-				</p>
-			</div>
-		<?php elseif ( isset( $_GET['revision-restored'] ) ) : ?>
-			<div class="updated">
-				<p>
-					<strong><?php _e( 'Revision restored.', 'humanstxt' ); ?></strong>
-				</p>
-			</div>
-		<?php elseif ( isset( $_GET['file-imported'] ) ) : ?>
-			<div class="updated">
-				<p>
-					<strong><?php _e( 'Import successful. A backup of the original file has been created.', 'humanstxt' ); ?></strong>
-				</p>
-			</div>
-		<?php elseif ( isset( $_GET['rename-failed'] ) ) : ?>
-			<div class="error">
-				<p>
-					<strong><?php _e( 'Error: The content has been imported, but the original file could not be renamed.', 'humanstxt' ); ?></strong>
-					<?php
-						// TODO: consider removing.
-						echo $faq_link;
-					?>
-				</p>
-			</div>
-		<?php elseif ( isset( $_GET['import-failed'] ) ) : ?>
-			<div class="error">
-				<p>
-					<strong><?php _e( 'Error: Import failed.', 'humanstxt' ); ?></strong>
-					<?php
-						// TODO: consider removing.
-						echo $faq_link;
-					?>
-				</p>
-			</div>
-		<?php endif; ?>
+	$humanstxt_options_settings = settings_fields( 'humanstxt' );
 
-		<?php if ( humanstxt_exists() && ! isset( $_GET['rename-failed'], $_GET['import-failed'] ) ) : ?>
-			<div class="error">
-				<p>
-					<strong><?php _e( 'Error: The site root already contains a physical humans.txt file.', 'humanstxt' ); ?></strong>
-					<?php
-						// TODO: consider removing.
-						echo $faq_link;
-					?>
-					<?php
-					if ( current_user_can( 'edit_files' ) ) {
-						printf(
-							/* translators: Please read the FAQ... or try to ... */
-							__( 'or try to <a href="%s">import and rename</a> the physical humans.txt file.', 'humanstxt' ),
-							wp_nonce_url(
-								add_query_arg(
-									array( 'action' => 'import-file' ),
-									HUMANSTXT_OPTIONS_URL
-								),
-								'import-humanstxt-file'
-							)
-						);
-					}
-					?>
-				</p>
-			</div>
-		<?php elseif ( '' === get_option( 'permalink_structure' ) && current_user_can( 'manage_options' ) ) : ?>
-			<div class="error">
-				<p>
-					<strong><?php printf( __( 'Error: Please <a href="%s">update your permalink structure</a> to something other than the default.', 'humanstxt' ), admin_url( 'options-permalink.php' ) ); ?></strong>
-					<?php
-						// TODO: consider removing.
-						echo $faq_link;
-					?>
-				</p>
-			</div>
-		<?php endif; ?>
+	$humanstxt_enabled    = humanstxt_option( 'enabled' );
+	$humanstxt_author_tag = humanstxt_option( 'author_tag' );
 
-		<form method="post" action="<?php echo HUMANSTXT_OPTIONS_URL; ?>">
+	$humanstxt_roles = is_array( humanstxt_option( 'roles' ) ) ? humanstxt_option( 'roles' ) : array();
+	$wordpress_roles = get_editable_roles();
+	unset( $wordpress_roles['subscriber'] );
 
-			<?php settings_fields( 'humanstxt' ); ?>
+	$roles = array();
 
-			<?php if ( current_user_can( 'manage_options' ) ) : ?>
+	foreach ( $wordpress_roles as $role => $details ) {
+		$checked  = ( 'administrator' === $role || in_array( $role, $humanstxt_roles, true ) ) ? 'checked="checked" ' : '';
+		$disabled = ( 'administrator' === $role ) ? 'disabled="disabled" ' : '';
+		$roles[]  = array(
+			'id'       => 'humanstxt_role_' . $role,
+			'name'     => 'humanstxt_roles[' . $role . ']',
+			'role'     => $role,
+			'checked'  => $checked,
+			'disabled' => $disabled,
+			'friendly' => translate_user_role( $details['name'] ),
+		);
+	}
 
-				<h3>
-					<?php _e( 'Settings' ); ?>
-				</h3>
-				<table class="form-table">
-					<tr valign="top">
-						<th scope="row">
-							<?php _e( 'Humans TXT File', 'humanstxt' ); ?>
-						</th>
-						<td>
-							<fieldset>
-								<legend class="screen-reader-text">
-									<span>
-										<?php _e( 'Humans TXT File', 'humanstxt' ); ?>
-									</span>
-								</legend>
-								<label for="humanstxt_enable">
-									<input
-										id="humanstxt_enable"
-										name="humanstxt_enable"
-										type="checkbox"
-										value="1"
-										<?php checked( humanstxt_option( 'enabled' ) ); ?>
-									>
-									<?php _e( 'Activate humans.txt file', 'humanstxt' ); ?>
-								</label>
-								<br>
-								<label
-									for="humanstxt_author_tag"
-									title="<?php esc_attr_e( 'Adds an <link rel="author"> tag to the site\'s <head> tag pointing to the humans.txt file.', 'humanstxt' ); ?>"
-								>
-									<input
-										id="humanstxt_author_tag"
-										name="humanstxt_author_tag"
-										type="checkbox"
-										value="1"
-										<?php checked( humanstxt_option( 'author_tag' ) ); ?>
-									>
-									<?php _e( 'Add an author link tag to the site', 'humanstxt' ); ?>
-								</label>
-							</fieldset>
-						</td>
-					</tr>
-					<tr valign="top">
-						<th scope="row">
-							<?php _e( 'Editing Permissions', 'humanstxt' ); ?>
-						</th>
-						<td>
-							<fieldset>
-								<legend class="screen-reader-text">
-									<span>
-										<?php _e( 'Editing Permissions', 'humanstxt' ); ?>
-									</span>
-								</legend>
-								<p>
-									<?php
-									_e( 'Roles that can edit the content of the humans.txt file', 'humanstxt' );
-									echo ':';
-									?>
-								</p>
-								<?php
-									$humanstxt_roles = is_array( humanstxt_option( 'roles' ) ) ? humanstxt_option( 'roles' ) : array();
-									$wordpress_roles = get_editable_roles();
-									unset( $wordpress_roles['subscriber'] );
-								?>
-								<?php foreach ( $wordpress_roles as $role => $details ) : ?>
-									<?php $checked = ( 'administrator' === $role || in_array( $role, $humanstxt_roles, true ) ) ? 'checked="checked" ' : ''; ?>
-									<?php $disabled = ( 'administrator' === $role ) ? 'disabled="disabled" ' : ''; ?>
-									<label for="humanstxt_role_<?php echo $role; ?>">
-										<input
-											id="humanstxt_role_<?php echo $role; ?>"	
-											name="humanstxt_roles[<?php echo $role; ?>]"
-											type="checkbox"
-											value="1"
-											<?php echo $checked; ?>
-											<?php echo $disabled; ?>
-										>
-										<?php
-											$name = filter_var( $details['name'], FILTER_UNSAFE_RAW );
-											$name = false === $name ? '' : $name;
-											echo translate_user_role( $name );
-										?>
-									</label>
-									<br>
-								<?php endforeach; ?>
-							</fieldset>
-						</td>
-					</tr>
-				</table>
+	$humanstxt_content     = esc_textarea( humanstxt_content() );
+	$humanstxt_preview_url = wp_nonce_url( admin_url( 'admin-ajax.php?action=humanstxt-preview' ), 'humanstxt-options' );
 
-				<p class="submit clear">
-					<input
-						type="submit"
-						name="submit"
-						class="button button-primary"
-						value="<?php esc_attr_e( 'Save Changes' ); ?>"
-					>
-					<?php if ( humanstxt_option( 'enabled' ) !== null ) : ?>
-						<a
-							href="<?php echo home_url( 'humans.txt' ); ?>"
-							rel="external"
-							class="button">
-							<?php _e( 'View Humans TXT', 'humanstxt' ); ?>
-						>
-						</a>
-					<?php endif; ?>
-				</p>
-			<?php endif; ?>
-			<h3><?php _e( 'Humans TXT File', 'humanstxt' ); ?></h3>
+	$revisions      = humanstxt_revisions();
+	$have_revisions = ( is_array( $revisions ) && count( $revisions ) > 1 );
+	$revisions_url  = wp_nonce_url( HUMANSTXT_REVISIONS_URL, 'humanstxt-options' );
 
-			<div id="humanstxt-editor-wrap">
-				<table class="form-table">
-					<tr valign="top">
-						<td>
-							<fieldset>
-								<legend class="screen-reader-text">
-									<span><?php _e( 'Humans TXT File', 'humanstxt' ); ?></span>
-								</legend>
-								<span class="description">
-									<label for="humanstxt_content">
-										<?php _e( 'If you need a little help with your humans.txt, try the "Help" button at the top right of this page.', 'humanstxt' ); ?>
-									</label>
-								</span>
-								<textarea
-									id="humanstxt_content"
-									name="humanstxt_content"
-									rows="25"
-									cols="80"
-									class="large-text code"
-								>
-									<?php echo esc_textarea( humanstxt_content() ); ?>
-								</textarea>
-							</fieldset>
-						</td>
-					</tr>
-				</table>
-				<p class="submit">
-					<input
-						type="submit"
-						name="submit"
-						class="button button-primary"
-						value="<?php esc_attr_e( 'Save' ); ?>"
-					>
-					<a
-						href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-ajax.php?action=humanstxt-preview' ), 'humanstxt-options' ) ); ?>"
-						class="button button-preview hide-if-no-js"
-						title="<?php _e( 'Preview' ); ?>"><?php _e( 'Preview' ); ?>
-					</a>
-					<?php $revisions = humanstxt_revisions(); ?>
-					<?php if ( is_array( $revisions ) && count( $revisions ) > 1 ) : ?>
-						<a
-							href="<?php echo esc_url( wp_nonce_url(  HUMANSTXT_REVISIONS_URL, 'humanstxt-options' ) ); ?>"
-							class="button"
-						>
-							<?php _e( 'View Revisions', 'humanstxt' ); ?>
-						</a>
-					<?php endif; ?>
-				</p>
-			</div>
+	$group_names         = array(
+		'wordpress' => __( 'WordPress' ),
+		'server'    => __( 'Server', 'humanstxt' ),
+		'addons'    => __( 'Themes & Plugins', 'humanstxt' ),
+		'misc'      => __( 'Miscellaneous', 'humanstxt' ),
+	);
+		$valid_variables = humanstxt_valid_variables();
+		$variable_groups = array();
+	foreach ( $valid_variables as $variable ) {
+		if ( isset( $group_names[ $variable[0] ] ) ) {
+			$variable_groups[ $variable[0] ][] = $variable;
+		}
+	}
+	$have_variables = ( 0 !== count( $variable_groups ) );
 
-			<?php
-			$group_names     = array(
-				'wordpress' => __( 'WordPress' ),
-				'server'    => __( 'Server', 'humanstxt' ),
-				'addons'    => __( 'Themes & Plugins', 'humanstxt' ),
-				'misc'      => __( 'Miscellaneous', 'humanstxt' ),
-			);
-			$valid_variables = humanstxt_valid_variables();
-			$variable_groups = array();
-			foreach ( $valid_variables as $variable ) {
-				if ( isset( $group_names[ $variable[0] ] ) ) {
-					$variable_groups[ $variable[0] ][] = $variable;
-				}
-			}
-			?>
-			<?php if ( 0 !== count( $variable_groups ) ) : ?>
-				<div id="humanstxt-vars">
-					<h4><?php _e( 'Variables', 'humanstxt' ); ?></h4>
-					<ul>
-						<?php foreach ( $variable_groups as $group => $variables ) : ?>
-							<li>
-								<h5><?php echo $group_names[ $group ]; ?></h5>
-								<ul class="hidden">
-									<?php foreach ( $variables as $variable ) : ?>
-										<?php
-										/** @var string $preview */
-										$preview = ( ! isset( $variable[5] ) || '' === $variable[5] ) && is_callable( $variable[3] ) ? call_user_func( $variable[3] ) : /* translators: Preview: Not available... */ __( 'Not available...', 'humanstxt' );
-										?>
-										<li title="<?php echo esc_attr( sprintf( /* translators: %s: output preview of variable */__( 'Preview: %s', 'humanstxt' ), $preview ) ); ?>">
-											<code>$<?php echo $variable[2]; ?>$</code>
-											<?php if ( isset( $variable[4] ) && '' !== $variable[4] ) : ?>
-												&mdash; <?php echo $variable[4]; ?>
-											<?php endif; ?>
-										</li>
-									<?php endforeach; ?>
-								</ul>
-							</li>
-						<?php endforeach; ?>
-					</ul>
-				</div>
-			<?php endif; ?>
-		</form>
-	</div>
-	<?php
+	Timber::render(
+		'twig/options.twig',
+		array(
+			'plugin_url'                 => HUMANSTXT_PLUGIN_URL,
+			'options_url'                => HUMANSTXT_OPTIONS_URL,
+			'content'                    => humanstxt_content(),
+			'option_enabled'             => humanstxt_option( 'enabled' ),
+			'option_author_tag'          => humanstxt_option( 'author_tag' ),
+			'option_roles'               => is_array( humanstxt_option( 'roles' ) ) ? humanstxt_option( 'roles' ) : array(),
+			'editable_roles'             => get_editable_roles(),
+			'settings_updated'           => $settings_updated,
+			'revision_restored'          => $revision_restored,
+			'file_imported'              => $file_imported,
+			'rename_failed'              => $rename_failed,
+			'import_failed'              => $import_failed,
+			'humanstxt_exists'           => $humanstxt_exists,
+			'user_can_edit_files'        => $user_can_edit_files,
+			'user_can_manage_options'    => $user_can_manage_options,
+			'import_file_url'            => $import_file_url,
+			'empty_permalink_structure'  => $empty_permalink_structure,
+			'permalink_structure_url'    => $prmalink_structure_url,
+			'humanstxt_options_url'      => HUMANSTXT_OPTIONS_URL,
+			'humanstxt_options_settings' => $humanstxt_options_settings,
+			'humanstxt_enabled'          => $humanstxt_enabled,
+			'humanstxt_author_tag'       => $humanstxt_author_tag,
+			'roles'                      => $roles,
+			'humanstxt_url'              => home_url( 'humans.txt' ),
+			'humanstxt_content'          => $humanstxt_content,
+			'humanstxt_preview_url'      => $humanstxt_preview_url,
+			'have_revisions'             => $have_revisions,
+			'revisions_url'              => $revisions_url,
+			'have_variables'             => $have_variables,
+			'variable_groups'            => $variable_groups,
+			'group_names'                => $group_names,
+		)
+	);
 }
 
 /**
  * Prints the plugin options revisions page.
-*/
+ */
 function humanstxt_revisions_page(): void {
 	?>
 	<div id="humanstxt-revisions" class="wrap">

@@ -1,0 +1,24 @@
+<div id="humanstxt-vars">
+                <h4>{{ _e( 'Variables', 'humanstxt' ) }}</h4>
+                <ul>
+                    {% for group, group_name in group_names %}
+                        <li>
+                            <h5>{{ group_name }}</h5>
+                            <ul class="hidden">
+                                {% for variables in variable_groups %}
+                                    {% for variable in variables %}
+                                    {% if variable[0] == group %}
+                                    <li title="{{ __( 'Preview: ', 'humanstxt' ) ~ variable[3] }}">
+                                        <code>{{ '$' ~ variable[2] ~ '$' }}</code>
+                                        {% if variable[4] %}
+                                            {{ '&mdash;' ~ variable[4] }}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
